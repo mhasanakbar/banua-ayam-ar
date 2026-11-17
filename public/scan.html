@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#2b1608" />
+<title>Viewer 3D — Banua Ayam AR</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐣</text></svg>" />
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js", "three/addons/": "./vendor/jsm/" } }
+</script>
+<style>
+  :root { --gold: #ffd36b; --cream: #fff4d6; --c: #d98b4a; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: #2b1608; color: #fff; font-family: system-ui, -apple-system, Roboto, sans-serif; overflow: hidden; }
+  #stage { position: fixed; inset: 0; background: radial-gradient(circle at 50% 38%, #fff8e6 0%, color-mix(in srgb, var(--c) 55%, #fff4d6) 45%, #3b1a0a 100%); }
+  #v { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+  header { position: fixed; top: 0; left: 0; right: 0; padding: calc(env(safe-area-inset-top) + 12px) 16px 10px; display: flex; align-items: center; gap: 10px; background: linear-gradient(#2b1608ee, #2b160800); }
+  .badge { background: var(--gold); color: #3b1a0a; font-weight: 800; border-radius: 20px; padding: 4px 10px; font-size: 12px; white-space: nowrap; }
+  .conn { margin-left: auto; font-size: 12px; display: flex; align-items: center; gap: 6px; background: #0005; padding: 5px 9px; border-radius: 20px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; }
+  .dot.ok { background: #4ade80; box-shadow: 0 0 6px #4ade80; } .dot.bad { background: #ef4444; }
+  #dots { display: flex; gap: 5px; }
+  @media (max-width: 440px) { #connText { display: none; } .badge { font-size: 11px; padding: 4px 8px; } #dots span { width: 24px; height: 24px; } header { gap: 6px; padding-left: 10px; padding-right: 10px; } }
+  #dots span { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font-size: 14px; background: #ffffff1c; border: 1px dashed #ffffff55; }
+  #dots span.on { background: var(--gold); border: 1px solid #fff; }
+  #dots span.cur { outline: 2px solid #fff; outline-offset: 2px; }
+  #sheet { position: fixed; left: 0; right: 0; bottom: 0; background: linear-gradient(170deg, #4a2412f5, #2b1608f8); border-radius: 22px 22px 0 0; padding: 14px 18px calc(env(safe-area-inset-bottom) + 16px); max-height: 52vh; overflow-y: auto; transition: transform .35s; box-shadow: 0 -10px 30px #0006; }
+  #sheet.collapsed { transform: translateY(calc(100% - 118px)); }
+  .grip { width: 44px; height: 5px; border-radius: 3px; background: #ffffff55; margin: 0 auto 10px; }
+  h1 { margin: 0; font: 800 26px Georgia, serif; color: var(--cream); }
+  .time { color: var(--gold); font-weight: 600; font-size: 14px; margin: 2px 0 10px; }
+  p { line-height: 1.6; color: #f7ead2; margin: 0 0 10px; font-size: 15px; }
+  ul { padding-left: 18px; margin: 0 0 12px; color: #f2e2c4; line-height: 1.6; font-size: 14px; }
+  li::marker { content: '✦  '; color: var(--gold); }
+  .nav { display: flex; gap: 8px; }
+  button { flex: 1; font: 700 14px system-ui; border: 0; border-radius: 12px; padding: 12px; background: #ffffff1f; color: #fff; border: 1px solid #ffffff40; }
+  button.primary { background: var(--gold); color: #3b1a0a; border: 0; }
+  button:disabled { opacity: .35; }
+  #pop { position: fixed; left: 50%; top: 84px; transform: translateX(-50%); background: #1d7a3aee; padding: 10px 16px; border-radius: 14px; font-weight: 700; font-size: 14px; text-align: center; width: max-content; max-width: 92vw; box-shadow: 0 8px 20px #0005; animation: pin .5s; }
+  @keyframes pin { from { opacity: 0; transform: translate(-50%, -12px) scale(.9); } }
+  #hint { position: fixed; top: 46%; width: 100%; text-align: center; color: #3b1a0a99; font-size: 12px; pointer-events: none; }
+  #err { position: fixed; inset: 0; display: none; place-items: center; text-align: center; padding: 30px; background: #2b1608; }
+  .done { position: fixed; inset: 0; display: grid; place-items: center; background: #000a; z-index: 5; padding: 20px; }
+  .done .card { background: linear-gradient(170deg, #4a2412, #2b1608); border-radius: 20px; padding: 24px; text-align: center; border: 1px solid #ffd36b55; }
+  .done .big { font-size: 52px; }
+  .tips { background: #2f5a1fcc; border: 1px solid #7dd36a88; border-radius: 12px; padding: 8px 12px; margin: 0 0 12px; font-size: 14px; color: #e9ffd9; }
+  .tips ul { margin: 4px 0 0; }
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="v"></canvas></div>
+<header>
+  <span class="badge" id="badge">TAHAP ?</span>
+  <div id="dots"></div>
+  <div class="conn"><span class="dot" id="dot"></span><span id="connText">…</span></div>
+</header>
+<div id="hint">☝️ geser untuk memutar · cubit untuk zoom</div>
+<div id="sheet">
+  <div class="grip" id="grip"></div>
+  <h1 id="name">Memuat…</h1>
+  <div class="time" id="time"></div>
+  <p id="desc"></p>
+  <ul id="facts"></ul>
+  <div class="tips"><b>🧑‍🌾 Tips beternak</b><ul id="tips"></ul></div>
+  <p style="font-size:13px"><a href="ar.html" style="color:#ffd36b">📷 Buka Kamera AR</a> · <a href="tentang.html" style="color:#ffd36b">ℹ️ Tentang</a></p>
+  <div class="nav">
+    <button id="prev">← Sebelumnya</button>
+    <button id="next" class="primary">Berikutnya →</button>
+  </div>
+</div>
+<div id="err"><div><h2>Tahap tidak ditemukan</h2><p>Scan salah satu dari 5 QR di Rumah Banjar.</p></div></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { STAGES, buildStage } from './js/models.js';
+import { net } from './js/net.js';
+await net.init();
+
+const $ = (s) => document.querySelector(s);
+const n0 = Number(new URLSearchParams(location.search).get('s') || (location.pathname.match(/\/scan\/(\d)/) || [])[1]);
+if (!(n0 >= 1 && n0 <= 5)) { $('#err').style.display = 'grid'; throw new Error('bad stage'); }
+
+let scanned = [];
+let current = n0;
+
+// ---------- 3D viewer ----------
+const canvas = $('#v');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene();
+const cam = new THREE.PerspectiveCamera(40, 1, 0.05, 50);
+cam.position.set(1.7, 1.4, 2.4);
+scene.add(new THREE.HemisphereLight('#ffffff', '#b98a5a', 1.6));
+const key = new THREE.DirectionalLight('#fff6e0', 2.4); key.position.set(2, 4, 3); key.castShadow = true; key.shadow.mapSize.set(1024, 1024); scene.add(key);
+const rim = new THREE.DirectionalLight('#ffd9a0', 1.0); rim.position.set(-3, 2, -3); scene.add(rim);
+const floor = new THREE.Mesh(new THREE.CircleGeometry(1.4, 48), new THREE.ShadowMaterial({ opacity: 0.28 }));
+floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.9, 0.06, 48), new THREE.MeshStandardMaterial({ color: '#8b4f2a', roughness: 0.6 }));
+plate.position.y = -0.03; plate.receiveShadow = true; scene.add(plate);
+const ctrl = new OrbitControls(cam, canvas);
+ctrl.target.set(0, 0.5, 0); ctrl.enableDamping = true; ctrl.enablePan = false;
+ctrl.minDistance = 1.2; ctrl.maxDistance = 14; ctrl.autoRotate = true; ctrl.autoRotateSpeed = 2.2;
+ctrl.maxPolarAngle = Math.PI * 0.52;
+canvas.addEventListener('pointerdown', () => ($('#hint').style.display = 'none'));
+
+// partikel saat muncul
+let sparks = null;
+const dotTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'); const r = g.createRadialGradient(32, 32, 0, 32, 32, 32); r.addColorStop(0, '#fff'); r.addColorStop(0.4, '#fff'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
+function burst(color) {
+  const N = 120, geo = new THREE.BufferGeometry(), p = new Float32Array(N * 3), v = [];
+  for (let i = 0; i < N; i++) { p.set([0, 0.5, 0], i * 3); v.push(new THREE.Vector3((Math.random() - .5) * 3, Math.random() * 3, (Math.random() - .5) * 3)); }
+  geo.setAttribute('position', new THREE.BufferAttribute(p, 3));
+  if (sparks) scene.remove(sparks.pts);
+  sparks = { pts: new THREE.Points(geo, new THREE.PointsMaterial({ color, size: 0.06, transparent: true, map: dotTex, depthWrite: false })), v, life: 0 };
+  scene.add(sparks.pts);
+}
+
+let model = null, appear = 0, appearStart = 0;
+function show(n, animate = true) {
+  current = n;
+  const s = STAGES[n - 1];
+  if (model) scene.remove(model);
+  model = buildStage(n);
+  model.scale.setScalar(0.001);
+  scene.add(model);
+  appear = animate ? 0 : 1; appearStart = performance.now();
+  document.documentElement.style.setProperty('--c', s.color);
+  $('#badge').textContent = `TAHAP ${n}/5`;
+  $('#name').textContent = `${s.emoji} ${s.name}`;
+  $('#time').textContent = `⏱ ${s.time}`;
+  $('#desc').textContent = s.desc;
+  $('#facts').innerHTML = s.facts.map((f) => `<li>${f}</li>`).join('');
+  $('#tips').innerHTML = s.tips.map((f) => `<li>${f}</li>`).join('');
+  document.title = `${s.name} — Daur Hidup Ayam`;
+  if (animate) burst(s.color);
+  renderDots();
+  requestAnimationFrame(resize);
+}
+
+function renderDots() {
+  $('#dots').innerHTML = STAGES.map((s) => `<span class="${scanned.includes(s.n) ? 'on' : ''} ${s.n === current ? 'cur' : ''}" data-n="${s.n}">${scanned.includes(s.n) ? s.emoji : s.n}</span>`).join('');
+  $('#dots').querySelectorAll('span.on').forEach((el) => (el.onclick = () => show(Number(el.dataset.n))));
+  const sorted = [...scanned].sort();
+  const i = sorted.indexOf(current);
+  $('#prev').disabled = i <= 0;
+  $('#next').disabled = i < 0 || i >= sorted.length - 1;
+  $('#next').textContent = i >= sorted.length - 1 && scanned.length < 5 ? `Cari QR lain (${scanned.length}/5)` : 'Berikutnya →';
+}
+$('#prev').onclick = () => { const s = [...scanned].sort(); const i = s.indexOf(current); if (i > 0) show(s[i - 1]); };
+$('#next').onclick = () => { const s = [...scanned].sort(); const i = s.indexOf(current); if (i < s.length - 1) show(s[i + 1]); };
+$('#grip').onclick = () => $('#sheet').classList.toggle('collapsed');
+
+function resize() {
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w, h, false);
+  cam.aspect = w / h;
+  cam.fov = 40;
+  // layar potret: mundurkan kamera agar model utuh terlihat
+  const dist = 3.4 * Math.max(1, 0.9 / cam.aspect);
+  const dir = cam.position.clone().sub(ctrl.target).normalize();
+  cam.position.copy(ctrl.target).addScaledVector(dir, dist);
+  // geser gambar ke atas agar model tidak tertutup panel bawah
+  const sheetH = document.querySelector('#sheet').getBoundingClientRect().height;
+  cam.setViewOffset(w, h, 0, Math.min(h * 0.22, sheetH * 0.36), w, h);
+  cam.updateProjectionMatrix();
+}
+addEventListener('resize', resize); resize();
+
+const clock = new THREE.Clock();
+let t = 0;
+(function loop() {
+  const dt = Math.min(0.05, clock.getDelta()); t += dt;
+  if (model) {
+    model.userData.update?.(t);
+    if (appear < 1) {
+      appear = Math.min(1, (performance.now() - appearStart) / 1000);
+      const k = appear, el = k === 1 ? 1 : 1 - Math.pow(2, -10 * k) * Math.cos(k * 10);
+      model.scale.setScalar(Math.max(0.001, el));
+      model.position.y = (1 - k) * 0.8;
+    }
+  }
+  if (sparks) {
+    sparks.life += dt;
+    const a = sparks.pts.geometry.attributes.position.array;
+    sparks.v.forEach((v, i) => { v.y -= 4 * dt; a[i * 3] += v.x * dt; a[i * 3 + 1] += v.y * dt; a[i * 3 + 2] += v.z * dt; });
+    sparks.pts.geometry.attributes.position.needsUpdate = true;
+    sparks.pts.material.opacity = Math.max(0, 1 - sparks.life / 2);
+    if (sparks.life > 2) { scene.remove(sparks.pts); sparks = null; }
+  }
+  ctrl.update();
+  renderer.render(scene, cam);
+  requestAnimationFrame(loop);
+})();
+
+// ---------- Kirim scan ke laptop ----------
+function popMsg(html, ms = 4000) {
+  const d = document.createElement('div'); d.id = 'pop'; d.innerHTML = html;
+  document.body.appendChild(d); setTimeout(() => d.remove(), ms);
+}
+function vibrate(p) { try { navigator.vibrate && navigator.vibrate(p); } catch {} }
+
+function celebrate() {
+  const d = document.createElement('div');
+  d.className = 'done';
+  d.innerHTML = `<div class="card"><div class="big">🎉🐔🎉</div><h1>Daur hidup lengkap!</h1><p>🥚 → 🔬 → 🐣 → 🐥 → 🐔 → 🥚<br/>Kamu sudah menemukan semua tahap!</p><button class="primary">Lihat lagi</button></div>`;
+  d.querySelector('button').onclick = () => d.remove();
+  document.body.appendChild(d);
+  vibrate([80, 60, 80, 60, 200]);
+}
+
+async function report() {
+  try {
+    const r = await net.scan(n0);
+    scanned = r.scanned;
+    show(n0, true);
+    vibrate(r.isNew ? [60, 40, 120] : 40);
+    popMsg(r.isNew ? `✨ Tahap ${n0} terbuka! Model juga tampil di rumah 3D 🏠` : `Tahap ${n0} sudah pernah discan 👍`);
+    if (r.isNew && scanned.length === 5) setTimeout(celebrate, 1400);
+  } catch (e) {
+    show(n0, true);
+    $('#dot').className = 'dot bad'; $('#connText').textContent = 'Offline';
+    popMsg('⚠️ Gagal terhubung ke laptop', 5000);
+  }
+}
+report();
+window.__scan = () => ({ y: model?.position.y, s: model?.scale.x, appear, cam: cam.position.toArray(), fov: cam.fov });
+
+net.on((e) => {
+  if (e.type === 'online') { $('#dot').className = 'dot ok'; $('#connText').textContent = net.server ? 'Terhubung' : 'Online'; }
+  else if (e.type === 'offline') { $('#dot').className = 'dot bad'; $('#connText').textContent = 'Terputus'; }
+  else if (e.type === 'reset') { scanned = []; renderDots(); popMsg('Progres direset'); }
+  else if (e.scanned.length >= scanned.length) { scanned = e.scanned; renderDots(); }
+});
+</script>
+</body>
+</html>

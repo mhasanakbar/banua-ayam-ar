@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Banua Ayam AR — Daur Hidup Ayam Kampung</title>
+<meta name="description" content="WebAR edukasi beternak ayam kampung di pekarangan untuk ketahanan pangan keluarga Banjarmasin." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐔</text></svg>" />
+<link rel="stylesheet" href="css/game.css" />
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js", "three/addons/": "./vendor/jsm/" } }
+</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<!-- ============ HUD ============ -->
+<div id="hud" class="hidden">
+  <div id="crosshair"></div>
+  <div id="progress" class="panel">
+    <div class="ptitle">🐔 Banua Ayam AR <span id="pcount">0/5</span></div>
+    <div id="chips"></div>
+    <div class="pbar"><div id="pfill"></div></div>
+  </div>
+  <div id="loc" class="panel">Halaman</div>
+  <div id="topright">
+    <div id="net" class="panel"><span id="dot"></span><span id="netText">Menghubungkan…</span></div>
+    <canvas id="minimap" width="200" height="200" class="panel"></canvas>
+  </div>
+  <div id="prompt" class="hidden"></div>
+  <div id="toasts"></div>
+  <div id="keys" class="panel">
+    <b>WASD</b> jalan · <b>Shift</b> lari · <b>Spasi</b> lompat · <b>E</b> interaksi · <b>C</b> daur hidup · <b>Esc</b> menu
+  </div>
+</div>
+
+<!-- Kontrol sentuh -->
+<div id="touch" class="hidden">
+  <div id="stick"><div id="knob"></div></div>
+  <div id="tbtns">
+    <button id="tAct">E</button>
+    <button id="tJump">⤒</button>
+    <button id="tRun">🏃</button>
+    <button id="tMenu">☰</button>
+  </div>
+</div>
+
+<!-- ============ MENU ============ -->
+<div id="menu" class="overlay">
+  <div class="menuWrap">
+    <div class="menuMain">
+      <div class="logo">🏠🐔</div>
+      <h1>Banua Ayam AR</h1>
+      <p class="sub"><b>Belajar beternak ayam kampung di pekarangan</b> untuk ketahanan pangan keluarga Banjarmasin. Jelajahi rumah adat <b>Bubungan Tinggi</b>, temukan <b>5 kode QR</b>, lalu pindai dengan <b>Kamera AR</b> di HP untuk memunculkan tiap tahap <b>daur hidup ayam</b> beserta tips beternaknya.</p>
+      <button id="startBtn" class="big">▶ Mulai Jelajah</button>
+      <div class="controls">
+        <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Jalan</div>
+        <div><kbd>Mouse</kbd> Lihat sekeliling</div>
+        <div><kbd>Shift</kbd> Lari</div>
+        <div><kbd>Spasi</kbd> Lompat</div>
+        <div><kbd>E</kbd> / klik Interaksi</div>
+        <div><kbd>C</kbd> Diagram daur hidup</div>
+      </div>
+    </div>
+    <div class="menuSide">
+      <h3>📷 Buka Kamera AR di HP</h3>
+      <ol class="steps">
+        <li class="server-only">Sambungkan HP ke <b>WiFi / hotspot yang sama</b> dengan laptop ini.</li>
+        <li class="server-only">Scan QR di bawah dengan kamera bawaan HP → terbuka halaman <b>Kamera AR</b>. Jika muncul peringatan sertifikat, pilih <b>Lanjutkan / Advanced → Proceed</b> (aman, ini server lokal Anda).</li>
+        <li class="static-only">Scan QR di bawah dengan kamera bawaan HP (HP perlu internet) → terbuka halaman <b>Kamera AR</b>.</li>
+        <li>Tekan <b>Buka Kamera</b> &amp; izinkan kamera.</li>
+        <li>Masuk ke rumah, dekati papan QR (tekan <kbd>E</kbd> untuk memperbesar), arahkan kamera HP → model 3D muncul <b>di atas QR</b> di layar HP!</li>
+      </ol>
+      <div class="hostRow">
+        <img id="homeQR" alt="QR tes koneksi" />
+        <div>
+          <div class="muted">Kamera AR untuk HP:</div>
+          <div id="lanUrl" class="url">—</div>
+          <label class="muted server-only" for="hostSel">Jaringan:</label>
+          <select id="hostSel" class="server-only"></select>
+          <div id="netWarn" class="warn hidden"></div>
+        </div>
+      </div>
+      <div class="row">
+        <a class="btn" href="print.html" target="_blank">🖨️ Cetak 5 QR</a>
+        <a class="btn ghost" href="tentang.html" target="_blank">ℹ️ Tentang proyek</a>
+        <button id="resetBtn" class="btn ghost">↺ Reset progres</button>
+      </div>
+      <details>
+        <summary>Tidak ada HP? Buka tahap tanpa scan</summary>
+        <div class="row" id="demoBtns"></div>
+      </details>
+    </div>
+  </div>
+</div>
+
+<!-- QR diperbesar -->
+<div id="qrModal" class="overlay hidden">
+  <div class="card qrCard">
+    <div class="qrHead"><span id="qrTitle">Tahap 1</span><button class="x" data-close>✕</button></div>
+    <img id="qrBig" alt="QR" />
+    <div class="muted">Arahkan <b>Kamera AR</b> di HP ke kode ini — model 3D akan muncul menempel di QR</div>
+    <div id="qrUrl" class="url"></div>
+    <div id="qrStatus" class="status"></div>
+    <button id="qrDone" class="btn hidden" style="margin:0 auto 10px">✓ Sudah saya pindai di HP — tampilkan di rumah</button>
+    <div class="muted small">Tekan <kbd>E</kbd> / <kbd>Esc</kbd> untuk kembali</div>
+  </div>
+</div>
+
+<!-- Info tahap -->
+<div id="infoModal" class="overlay hidden">
+  <div class="card infoCard">
+    <button class="x" data-close>✕</button>
+    <div class="infoGrid">
+      <div class="viewer"><canvas id="viewer"></canvas><div class="muted small">Seret untuk memutar</div></div>
+      <div>
+        <div id="infoBadge" class="badge"></div>
+        <h2 id="infoName"></h2>
+        <div id="infoTime" class="time"></div>
+        <p id="infoDesc"></p>
+        <ul id="infoFacts"></ul>
+        <div class="tipsBox"><b>🧑‍🌾 Tips beternak</b><ul id="infoTips"></ul></div>
+        <div class="row">
+          <button id="infoPrev" class="btn ghost">← Sebelumnya</button>
+          <button id="infoNext" class="btn ghost">Berikutnya →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Diagram daur hidup -->
+<div id="cycleModal" class="overlay hidden">
+  <div class="card cycleCard">
+    <button class="x" data-close>✕</button>
+    <h2>Daur Hidup Ayam</h2>
+    <div id="cycleRing"></div>
+    <p class="muted small">Tahap yang belum ditemukan ditandai "?". Klik tahap yang sudah terbuka untuk melihat detail.</p>
+  </div>
+</div>
+
+<!-- Selesai -->
+<div id="celebrate" class="overlay hidden">
+  <div class="card celebrateCard">
+    <div class="bigEmoji">🎉🐔🎉</div>
+    <h2>Selamat! Daur hidup ayam lengkap!</h2>
+    <p>Telur → Embrio → Menetas → Anak Ayam → Ayam Dewasa → bertelur lagi.<br/>Daur hidup ayam terus berulang 🔁</p>
+    <div class="flow">🥚 → 🔬 → 🐣 → 🐥 → 🐔 → 🥚</div>
+    <button class="big" data-close>Lanjut Menjelajah</button>
+  </div>
+</div>
+
+<div id="fade"></div>
+<div id="loading"><div class="spin"></div>Memuat dunia 3D…</div>
+
+<script type="module" src="js/game.js"></script>
+</body>
+</html>

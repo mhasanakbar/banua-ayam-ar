@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tentang — Banua Ayam AR</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐔</text></svg>" />
+<style>
+  :root { --gold: #ffd36b; --cream: #fff4d6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, Roboto, sans-serif; background: #2b1608; color: #f7ead2; line-height: 1.6; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 60px; }
+  header { text-align: center; padding: 26px 10px 10px; }
+  h1 { font: 800 36px Georgia, serif; color: var(--cream); margin: 6px 0; }
+  h2 { font: 800 22px Georgia, serif; color: var(--gold); margin: 30px 0 10px; }
+  .lead { font-size: 17px; }
+  .cta { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 18px 0; }
+  .btn { background: var(--gold); color: #3b1a0a; padding: 12px 18px; border-radius: 12px; font-weight: 800; text-decoration: none; }
+  .btn.ghost { background: #ffffff1c; color: #fff; border: 1px solid #ffffff44; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .card { background: linear-gradient(170deg, #4a2412, #3a1c0c); border: 1px solid #ffd36b33; border-radius: 16px; padding: 14px 16px; }
+  .card h3 { margin: 0 0 6px; color: var(--cream); font-size: 16px; }
+  .card p { margin: 0; font-size: 14px; }
+  .num { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--gold); color: #3b1a0a; font-weight: 800; font-size: 13px; margin-right: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ffffff1f; vertical-align: top; }
+  th { color: var(--gold); }
+  ol li, ul li { margin-bottom: 4px; }
+  a { color: var(--gold); }
+  .note { background: #2f5a1f88; border: 1px solid #7dd36a66; border-radius: 12px; padding: 12px 14px; }
+  #qr { width: 180px; background: #fff; border-radius: 12px; padding: 6px; }
+  .qrbox { text-align: center; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div style="font-size:54px">🏠🐔📷</div>
+    <h1>Banua Ayam AR</h1>
+    <p class="lead">Belajar beternak ayam kampung di pekarangan rumah, untuk <b>ketahanan pangan keluarga di Banjarmasin</b>, lewat augmented reality di HP.</p>
+    <div class="cta">
+      <a class="btn" href="ar.html">📷 Coba Kamera AR</a>
+      <a class="btn ghost" href="index.html">🏠 Jelajah Rumah Banjar 3D</a>
+      <a class="btn ghost" href="print.html">🖨️ Cetak marker QR</a>
+    </div>
+    <div class="qrbox"><img id="qr" alt="QR menuju Kamera AR" /><div style="font-size:13px">Pindai QR dan coba sekarang</div></div>
+  </header>
+
+  <h2>Lima pertanyaan perancangan</h2>
+  <div class="grid">
+    <div class="card"><h3><span class="num">1</span>Masalah</h3><p>Kebutuhan telur dan daging ayam keluarga di Banjarmasin umumnya dibeli di pasar, sehingga pengeluaran keluarga ikut terdampak saat harganya naik. Banyak keluarga sebenarnya punya pekarangan, tetapi belum tahu cara memulai beternak ayam kampung: berapa lama telur menetas, bagaimana merawat anak ayam, dan bagaimana membuat kandang yang aman dari genangan/banjir.</p></div>
+    <div class="card"><h3><span class="num">2</span>Pengguna</h3><p>Keluarga dan ibu rumah tangga yang punya pekarangan, pelajar, serta kelompok warga/UMKM pemula. Dipakai di rumah, sekolah, atau saat penyuluhan oleh kelurahan dan dinas terkait.</p></div>
+    <div class="card"><h3><span class="num">3</span>Pemicu</h3><p>5 marker QR, ditampilkan di layar (di dalam Rumah Banjar 3D) atau dicetak di kertas/poster. Setiap QR memicu satu tahap daur hidup ayam.</p></div>
+    <div class="card"><h3><span class="num">4</span>Konten</h3><p>5 model 3D berbeda (telur, embrio, telur menetas, anak ayam, ayam dewasa di sarang) + label teks 3D, penjelasan ilmiah singkat, dan tips beternak praktis di setiap tahap.</p></div>
+    <div class="card"><h3><span class="num">5</span>Ukuran keberhasilan</h3><p>Nilai tes akhir lebih tinggi daripada tes awal (5 soal), pengguna berhasil memunculkan 5/5 tahap, dan rating kebermanfaatan ≥ 4 dari 5.</p></div>
+  </div>
+
+  <h2>Cara pakai</h2>
+  <ol>
+    <li>Buka <b>Kamera AR</b> di HP (pindai QR di atas, atau buka tautan situs ini), lalu tekan <b>Buka Kamera</b> dan izinkan kamera.</li>
+    <li>Opsional: kerjakan <b>Tes awal</b> (5 soal, ±1 menit).</li>
+    <li>Arahkan kamera ke salah satu dari <b>5 marker QR</b>: di layar laptop (masuk ke Rumah Banjar 3D, dekati papan QR, tekan <b>E</b> untuk memperbesar) atau di kertas cetak.</li>
+    <li>Model 3D muncul di atas QR. Geser untuk memutar, cubit untuk zoom, tekan <b>ℹ️ Info</b> untuk penjelasan & tips beternak, <b>📸 Foto</b> untuk menyimpan foto AR.</li>
+    <li>Pilih <b>📺 Layar</b> untuk QR di layar/dinding atau <b>📄 Meja</b> untuk QR cetak yang diletakkan datar.</li>
+    <li>Setelah 5/5 tahap muncul, kerjakan <b>Tes akhir</b> dan beri rating.</li>
+  </ol>
+
+  <h2>Platform & jenis AR</h2>
+  <table>
+    <tr><th>Platform</th><td>WebAR di browser HP (tanpa install aplikasi), dibangun dengan three.js; dihosting gratis di GitHub Pages (HTTPS).</td></tr>
+    <tr><th>Jenis AR</th><td>Marker-based: kode QR dideteksi dengan jsQR, lalu posisi & kemiringan QR dihitung (homografi) sehingga model 3D menempel di atas QR.</td></tr>
+    <tr><th>Pemicu</th><td>5 marker QR (layar atau cetak). Halaman <a href="print.html">Cetak marker</a>.</td></tr>
+    <tr><th>Objek AR</th><td>1 Telur · 2 Telur (Embrio) · 3 Telur Menetas · 4 Anak Ayam · 5 Ayam Dewasa di sarang — ditambah label teks 3D.</td></tr>
+    <tr><th>Pendukung</th><td>Dunia 3D Rumah Banjar Bubungan Tinggi (bisa dijelajahi di laptop/HP) sebagai tempat marker berada, mengenalkan budaya lokal dan konsep kandang panggung yang tahan banjir.</td></tr>
+  </table>
+
+  <h2>Privasi</h2>
+  <div class="note">Tidak ada data pribadi yang dikumpulkan. Gambar kamera diproses langsung di HP dan tidak dikirim ke server mana pun. Hasil kuis dan progres hanya tersimpan di perangkat pengguna (localStorage). Tidak ada wajah, nomor HP, atau alamat yang dimuat.</div>
+
+  <h2>Kredit & lisensi aset</h2>
+  <table>
+    <tr><th>Aset</th><th>Pembuat</th><th>Lisensi</th></tr>
+    <tr><td>Semua model 3D (rumah Banjar, furnitur, ayam, telur, dll.), tekstur, dan efek suara</td><td>Dibuat sendiri secara prosedural dengan kode (tanpa file dari internet)</td><td>Karya sendiri</td></tr>
+    <tr><td><a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> (r160) + OrbitControls</td><td>three.js authors</td><td>MIT</td></tr>
+    <tr><td><a href="https://github.com/cozmo/jsQR" target="_blank" rel="noopener">jsQR</a></td><td>Cosmo Wolfe</td><td>Apache-2.0</td></tr>
+    <tr><td><a href="https://github.com/kazuhikoarase/qrcode-generator" target="_blank" rel="noopener">qrcode-generator</a></td><td>Kazuhiko Arase</td><td>MIT</td></tr>
+    <tr><td>Font</td><td>Font bawaan sistem perangkat</td><td>—</td></tr>
+  </table>
+
+  <h2>Keterbukaan penggunaan AI</h2>
+  <div class="note">Sebagian kode dan teks proyek ini dibuat dengan bantuan AI (Claude, Anthropic) sebagai asisten pemrograman, lalu diarahkan, diuji, dan disesuaikan oleh pembuat proyek. Informasi beternak bersifat umum; untuk vaksinasi dan kesehatan ternak, ikuti anjuran petugas peternakan setempat.</div>
+</div>
+<script type="module">
+  import { net } from './js/net.js';
+  await net.init();
+  if (net.server) net.host = net.defaultHost();
+  document.getElementById('qr').src = net.qrDataUrl(net.arUrl(0), 6, 2);
+</script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cetak Marker QR — Banua Ayam AR</title>
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js", "three/addons/": "./vendor/jsm/" } }
+</script>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 24px; color: #2b1608; background: #fff; }
+  h1 { font-family: Georgia, serif; margin: 0 0 4px; }
+  .bar { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; }
+  .card { border: 3px dashed #c4622d; border-radius: 16px; padding: 14px; text-align: center; break-inside: avoid; }
+  .card img { width: 100%; max-width: 220px; image-rendering: pixelated; }
+  .n { font-weight: 800; font-size: 22px; }
+  .u { font: 12px monospace; color: #7a3418; word-break: break-all; }
+  button { font: 600 15px system-ui; padding: 9px 16px; border-radius: 10px; border: 0; background: #ffd36b; cursor: pointer; }
+  @media print { .bar { display: none; } body { margin: 10mm; } }
+</style>
+</head>
+<body>
+<h1>🐔 Banua Ayam AR — Marker QR</h1>
+<p>Buka <b>Kamera AR</b> di HP lalu arahkan ke QR — model 3D muncul di atas kertas (pilih mode 📄 Meja). Tempel/cetak QR ini, lalu pindai dengan Kamera AR.</p>
+<div class="bar"><button onclick="print()">🖨️ Cetak</button><span id="h"></span></div>
+<div class="grid" id="g"></div>
+<script type="module">
+  import { net } from './js/net.js';
+  import { STAGES } from './js/models.js';
+  await net.init();
+  let host = new URLSearchParams(location.search).get('host');
+  if (!host && net.server) { try { host = localStorage.getItem('qrHost'); } catch {} host = net.hosts().includes(host) ? host : net.defaultHost(); }
+  if (host) net.host = host;
+  document.getElementById('h').textContent = `Kamera AR: ${net.arUrl(0)}`;
+  document.getElementById('g').innerHTML = STAGES.map((s) => `
+    <div class="card"><div class="n">TAHAP ${s.n}</div>
+    <img src="${net.qrDataUrl(net.arUrl(s.n), 8, 3)}" alt="QR tahap ${s.n}" />
+    <div>${s.emoji} ${s.name}</div><div class="u">${net.arUrl(s.n)}</div></div>`).join('');
+</script>
+</body>
+</html>

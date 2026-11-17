@@ -1,0 +1,19 @@
+{
+  "name": "banua-ayam-ar",
+  "version": "1.0.0",
+  "description": "Banua Ayam AR — WebAR edukasi beternak ayam kampung untuk ketahanan pangan keluarga Banjarmasin",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "markers": "node scripts/markers.mjs",
+    "deploy": "git subtree split --prefix public -b gh-pages-tmp && git push -f origin gh-pages-tmp:gh-pages && git branch -D gh-pages-tmp"
+  },
+  "dependencies": {
+    "jsqr": "^1.4.0",
+    "qrcode": "^1.5.4",
+    "qrcode-generator": "^2.0.4",
+    "selfsigned": "^5.5.0",
+    "three": "0.160.0"
+  }
+}
