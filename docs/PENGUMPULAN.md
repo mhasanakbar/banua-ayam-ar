@@ -7,8 +7,8 @@
 - [ ] **Individu**: isi nama di laporan & deck.
 
 ## Luaran 1 — Produk AR (UAS 75%)
-- Tautan produk: `https://USERNAME.github.io/banua-ayam-ar/ar.html`
-- QR/marker: `npm run markers -- https://USERNAME.github.io/banua-ayam-ar/`, lalu kumpulkan folder `markers/` (atau cetak `print.html`).
+- Tautan produk: `https://mhasanakbar.github.io/banua-ayam-ar/ar.html`
+- QR/marker: `npm run markers -- https://mhasanakbar.github.io/banua-ayam-ar/`, lalu kumpulkan folder `markers/` (atau cetak `print.html`).
 - Platform & jenis AR: WebAR (three.js + jsQR), AR berbasis marker QR.
 - Rubrik: relevansi masalah · fungsi teknis (tautan/QR, stabil, 5 objek) · desain & petunjuk (ada di layar awal, kartu info, `tentang.html`) · kreativitas (Rumah Banjar 3D + kandang panggung tahan banjir).
 

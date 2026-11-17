@@ -39,11 +39,11 @@ Pindai kode QR dengan **Kamera AR** di HP. Model 3D tiap tahap **daur hidup ayam
 ## Menjalankan
 
 ### A. Online (GitHub Pages) untuk dosen & penguji
-Folder `public/` dipublikasikan ke branch `gh-pages` (GitHub Pages). Setelah mengubah kode dan commit ke `main`, jalankan `npm run deploy` untuk memperbarui situs. Buka `https://USERNAME.github.io/banua-ayam-ar/ar.html` di HP. HTTPS asli, jadi tidak ada peringatan sertifikat. Progres & kuis tersimpan di perangkat masing-masing.
+Folder `public/` dipublikasikan ke branch `gh-pages` (GitHub Pages). Setelah mengubah kode dan commit ke `main`, jalankan `npm run deploy` untuk memperbarui situs. Buka `https://mhasanakbar.github.io/banua-ayam-ar/ar.html` di HP. HTTPS asli, jadi tidak ada peringatan sertifikat. Progres & kuis tersimpan di perangkat masing-masing.
 
 Buat file gambar marker untuk dikumpulkan:
 ```bash
-npm run markers -- https://USERNAME.github.io/banua-ayam-ar/
+npm run markers -- https://mhasanakbar.github.io/banua-ayam-ar/
 ```
 
 ### B. Lokal (tanpa internet) dengan sinkron HP ↔ laptop
