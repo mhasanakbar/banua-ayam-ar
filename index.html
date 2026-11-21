@@ -51,7 +51,7 @@
     <div class="menuMain">
       <div class="logo">🏠🐔</div>
       <h1>Banua Ayam AR</h1>
-      <p class="sub"><b>Belajar beternak ayam kampung di pekarangan</b> untuk ketahanan pangan keluarga Banjarmasin. Jelajahi rumah adat <b>Bubungan Tinggi</b>, temukan <b>5 kode QR</b>, lalu pindai dengan <b>Kamera AR</b> di HP untuk memunculkan tiap tahap <b>daur hidup ayam</b> beserta tips beternaknya.</p>
+      <p class="sub"><b>Belajar beternak ayam kampung di pekarangan</b> untuk ketahanan pangan keluarga Banjarmasin. Jelajahi rumah adat <b>Bubungan Tinggi</b>, temukan <b>10 kode QR</b>, lalu pindai dengan <b>Kamera AR</b> di HP: 5 tahap <b>daur hidup ayam</b> di ruang utama dan 5 <b>masakan Banjar</b> dari ayam di <b>padu (dapur)</b> belakang.</p>
       <button id="startBtn" class="big">▶ Mulai Jelajah</button>
       <div class="controls">
         <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Jalan</div>
@@ -118,8 +118,9 @@
         <h2 id="infoName"></h2>
         <div id="infoTime" class="time"></div>
         <p id="infoDesc"></p>
+        <b id="infoFactsTitle" class="factsTitle"></b>
         <ul id="infoFacts"></ul>
-        <div class="tipsBox"><b>🧑‍🌾 Tips beternak</b><ul id="infoTips"></ul></div>
+        <div class="tipsBox"><b id="infoTipsTitle">🧑‍🌾 Tips beternak</b><ul id="infoTips"></ul></div>
         <div class="row">
           <button id="infoPrev" class="btn ghost">← Sebelumnya</button>
           <button id="infoNext" class="btn ghost">Berikutnya →</button>
@@ -142,10 +143,10 @@
 <!-- Selesai -->
 <div id="celebrate" class="overlay hidden">
   <div class="card celebrateCard">
-    <div class="bigEmoji">🎉🐔🎉</div>
-    <h2>Selamat! Daur hidup ayam lengkap!</h2>
-    <p>Telur → Embrio → Menetas → Anak Ayam → Ayam Dewasa → bertelur lagi.<br/>Daur hidup ayam terus berulang 🔁</p>
-    <div class="flow">🥚 → 🔬 → 🐣 → 🐥 → 🐔 → 🥚</div>
+    <div class="bigEmoji" id="celEmoji">🎉🐔🎉</div>
+    <h2 id="celTitle">Selamat! Daur hidup ayam lengkap!</h2>
+    <p id="celText">Telur → Embrio → Menetas → Anak Ayam → Ayam Dewasa → bertelur lagi.<br/>Daur hidup ayam terus berulang 🔁</p>
+    <div class="flow" id="celFlow">🥚 → 🔬 → 🐣 → 🐥 → 🐔 → 🥚</div>
     <button class="big" data-close>Lanjut Menjelajah</button>
   </div>
 </div>

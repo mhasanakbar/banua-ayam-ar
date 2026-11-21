@@ -1,7 +1,8 @@
 // Model 3D prosedural daur hidup ayam (dipakai di laptop & HP).
 import * as THREE from 'three';
+import { DISH_STAGES, DISH_BUILDERS } from './dishes.js';
 
-export const STAGES = [
+const LIFE_STAGES = [
   {
     n: 1, key: 'telur', name: 'Telur', emoji: '🥚', time: 'Hari ke-0',
     color: '#d98b4a',
@@ -38,6 +39,19 @@ export const STAGES = [
     tips: ['Buat kandang panggung seperti rumah Banjar: aman dari genangan & banjir, lantai tetap kering.', 'Sisa dapur dan maggot bisa jadi pakan tambahan yang murah.', 'Sediakan sarang berjerami agar ayam nyaman bertelur.'],
   },
 ];
+
+/** 1–5: daur hidup ayam, 6–10: masakan Banjar dari ayam. */
+export const STAGES = [
+  ...LIFE_STAGES.map((s) => ({ ...s, group: 'daur', label: `Tahap ${s.n}`, factsTitle: '✦ Fakta', tipsTitle: '🧑‍🌾 Tips beternak' })),
+  ...DISH_STAGES,
+];
+export const GROUPS = {
+  daur: { title: 'Daur Hidup Ayam', short: 'Daur hidup', stages: [1, 2, 3, 4, 5], done: 'Daur hidup lengkap!' },
+  masak: { title: 'Masakan Banjar', short: 'Masakan', stages: [6, 7, 8, 9, 10], done: 'Semua masakan Banjar terkumpul!' },
+};
+export const TOTAL = STAGES.length;
+export const groupOf = (n) => (n <= 5 ? 'daur' : 'masak');
+export const byNum = (a, b) => a - b;
 
 // ---------- Material helper ----------
 const std = (color, opts = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.75, metalness: 0, ...opts });
@@ -498,9 +512,9 @@ function stageHen() {
   return g;
 }
 
-const BUILDERS = [stageEgg, stageEmbryo, stageHatching, stageChick, stageHen];
+const BUILDERS = [stageEgg, stageEmbryo, stageHatching, stageChick, stageHen, ...DISH_BUILDERS];
 
-/** Bangun model tahap n (1..5). Tinggi ±1 unit, dasar di y=0. Panggil group.userData.update(t) tiap frame. */
+/** Bangun model tahap n (1..10). Tinggi ±1 unit, dasar di y=0. Panggil group.userData.update(t) tiap frame. */
 export function buildStage(n) {
   const g = BUILDERS[n - 1]();
   g.userData.stage = STAGES[n - 1];

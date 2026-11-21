@@ -9,7 +9,7 @@ let scanned = [];
 let es = null;
 
 function readLocal() {
-  try { return JSON.parse(localStorage.getItem(KEY) || '[]').filter((n) => n >= 1 && n <= 5); } catch { return []; }
+  try { return JSON.parse(localStorage.getItem(KEY) || '[]').filter((n) => n >= 1 && n <= 10); } catch { return []; }
 }
 function writeLocal(list) { try { localStorage.setItem(KEY, JSON.stringify(list)); } catch {} }
 function emit(type, extra = {}) { for (const cb of listeners) cb({ type, scanned: [...scanned], ...extra }); }

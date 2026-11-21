@@ -1,7 +1,8 @@
 // Membangun dunia 3D: langit, halaman, sungai, Rumah Banjar (Bubungan Tinggi), furnitur, stasiun QR.
 import * as THREE from 'three';
 import { tex, textTexture } from './textures.js';
-import { STAGES, buildStage, makeHen, makeChick } from './models.js';
+import { STAGES, buildStage, makeHen, makeChick, GROUPS } from './models.js';
+import { makeKetupat, janurTexture } from './dishes.js';
 
 export const FH = 2.0;   // tinggi lantai rumah panggung
 export const WH = 3.2;   // tinggi dinding ruang utama
@@ -139,6 +140,8 @@ export function buildWorld(scene, { qrHost, onCluck } = {}) {
   // tanah di bawah rumah
   const under = new THREE.Mesh(new THREE.PlaneGeometry(19, 15), std('#ffffff', { map: tex('dirt', 6, 5) }));
   under.rotation.x = -Math.PI / 2; under.position.set(0, 0.012, -0.5); under.receiveShadow = true; scene.add(under);
+  const under2 = new THREE.Mesh(new THREE.PlaneGeometry(10.5, 8), std('#ffffff', { map: tex('dirt', 4, 3) }));
+  under2.rotation.x = -Math.PI / 2; under2.position.set(0, 0.011, -10.3); under2.receiveShadow = true; scene.add(under2);
   // jalan setapak
   const path = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 16), std('#ffffff', { map: tex('dirt', 1, 6) }));
   path.rotation.x = -Math.PI / 2; path.position.set(0, 0.015, 18); path.receiveShadow = true; scene.add(path);
@@ -254,7 +257,7 @@ export function buildWorld(scene, { qrHost, onCluck } = {}) {
   const win = (a, b) => ({ a, b, y0: 0.9, y1: 2.15, window: true });
   // ruang utama x[-5,5] z[-6,4]
   wall({ axis: 'x', at: 4, from: -5.075, to: 5.075, out: 1, openings: [{ a: -0.75, b: 0.75, y0: 0, y1: 2.35, pass: true }, win(-3.7, -2.5), win(2.5, 3.7)] });
-  wall({ axis: 'x', at: -6, from: -5.075, to: 5.075, out: -1, openings: [] });
+  wall({ axis: 'x', at: -6, from: -5.075, to: 5.075, out: -1, openings: [{ a: -1.95, b: -0.55, y0: 0, y1: 2.4, pass: true }] });
   wall({ axis: 'z', at: -5, from: -6, to: 4, out: -1, openings: [{ a: -3, b: 1, y0: 0, y1: 2.5, pass: true }] });
   wall({ axis: 'z', at: 5, from: -6, to: 4, out: 1, openings: [{ a: -3, b: 1, y0: 0, y1: 2.5, pass: true }] });
   // anjung kiri & kanan x[-8,-5] / [5,8], z[-3,1]
@@ -533,11 +536,11 @@ export function buildWorld(scene, { qrHost, onCluck } = {}) {
   // kain sasirangan di dinding belakang
   {
     const banner = new THREE.Mesh(new THREE.PlaneGeometry(0.85, 1.7), std('#ffffff', { map: tex('sasirangan', 1, 2), side: THREE.DoubleSide }));
-    banner.position.set(-1.45, F + 1.65, -5.91);
+    banner.position.set(-1.65, F + 1.6, 3.91); banner.rotation.y = Math.PI;
     interior.add(banner);
-    cyl(interior, 0.025, 0.025, 1.05, darkWood, -1.45, F + 2.52, -5.88, 6).rotation.z = Math.PI / 2;
+    cyl(interior, 0.025, 0.025, 1.05, darkWood, -1.65, F + 2.47, 3.88, 6).rotation.z = Math.PI / 2;
     const lbl = new THREE.Mesh(new THREE.PlaneGeometry(0.85, 0.18), std('#ffffff', { map: textTexture('Kain Sasirangan', { w: 512, h: 110, bg: '#3b1a0a', color: '#f3d08a', font: 'bold 52px serif' }) }));
-    lbl.position.set(-1.45, F + 0.6, -5.91);
+    lbl.position.set(-1.65, F + 0.55, 3.91); lbl.rotation.y = Math.PI;
     interior.add(lbl);
   }
 
@@ -719,6 +722,231 @@ export function buildWorld(scene, { qrHost, onCluck } = {}) {
   }
 
   // ======================================================
+  // PADU (DAPUR) — perpanjangan rumah ke belakang
+  // ======================================================
+  const KX = 4.5, KZ0 = -6, KZ1 = -13, KH = 2.9;
+  const kitchen = new THREE.Group();
+  interior.add(kitchen);
+  {
+    // tiang panggung
+    for (const x of [-4.5, -1.5, 1.5, 4.5]) for (const z of [-8.3, -10.6, -13]) cyl(house, 0.14, 0.16, FH, postMat, x, FH / 2, z, 10);
+    // lantai & lis
+    box(house, 2 * KX + 0.15, 0.22, KZ0 - KZ1 + 0.1, floorMat(9, 7), 0, FH - 0.11, (KZ0 + KZ1) / 2);
+    box(house, 2 * KX + 0.3, 0.25, 0.2, darkWood, 0, FH - 0.32, KZ1 - 0.05);
+    // dinding
+    for (const s of [-1, 1]) wall({ axis: 'z', at: s * KX, from: KZ1 - 0.075, to: KZ0, h: KH, out: s, openings: [win(-9.8, -8.9)] });
+    wall({ axis: 'x', at: KZ1, from: -KX - 0.075, to: KX + 0.075, h: KH, out: -1, openings: [{ a: -3.4, b: -2.2, y0: 1.7, y1: 2.45, window: true }] });
+    // plafon
+    box(house, 2 * KX + 0.15, 0.1, KZ0 - KZ1 + 0.15, ceilMat, 0, F + KH + 0.05, (KZ0 + KZ1) / 2);
+    // atap miring ke belakang
+    const y0 = FH + 3.6, y1 = FH + 2.8, z0 = KZ0, z1 = KZ1 - 0.6;
+    const len = Math.hypot(z0 - z1, y0 - y1);
+    const roof = box(house, 2 * KX + 0.9, 0.14, len, roofMat(3.5, 2.6), 0, (y0 + y1) / 2, (z0 + z1) / 2);
+    roof.rotation.x = -Math.atan2(y0 - y1, z0 - z1);
+    box(house, 2 * KX + 0.9, 0.16, 0.16, darkWood, 0, y1 - 0.02, z1 + 0.05);
+    // pengisi celah atas dinding samping
+    const fill = new THREE.Shape();
+    const yAt = (z) => (y0 - FH) - ((z0 - z) / (z0 - z1)) * (y0 - y1);
+    fill.moveTo(0, KH); fill.lineTo(0, yAt(KZ0)); fill.lineTo(KZ0 - KZ1, yAt(KZ1)); fill.lineTo(KZ0 - KZ1, KH); fill.closePath();
+    const fg = new THREE.ExtrudeGeometry(fill, { depth: T, bevelEnabled: false });
+    for (const s of [-1, 1]) {
+      const fm = new THREE.Mesh(fg, plankMat(2, 0.5));
+      fm.rotation.y = Math.PI / 2;
+      fm.position.set(s * KX - T / 2, FH, KZ0);
+      fm.castShadow = true;
+      house.add(fm);
+    }
+    curlOrnament(house, -KX - 0.35, y1 + 0.05, z1 + 0.1, 0, 0.6);
+    curlOrnament(house, KX + 0.35, y1 + 0.05, z1 + 0.1, 0, 0.6);
+
+    // kusen lorong ke dapur + papan nama
+    box(house, 0.12, 2.5, 0.3, frameMat, -1.98, F + 1.2, -6);
+    box(house, 0.12, 2.5, 0.3, frameMat, -0.52, F + 1.2, -6);
+    box(house, 1.6, 0.14, 0.3, frameMat, -1.25, F + 2.45, -6);
+    const signA = new THREE.Mesh(new THREE.PlaneGeometry(1.45, 0.32), std('#ffffff', { map: textTexture([{ text: '🍳 Padu (Dapur)', font: 'bold 54px system-ui', color: '#ffe7b0' }, { text: '5 QR masakan Banjar →', font: '36px system-ui', color: '#ffffff' }], { w: 640, h: 150, bg: '#3b1a0a' }) }));
+    signA.position.set(-1.25, F + 2.75, -5.9); interior.add(signA);
+    const signB = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.28), std('#ffffff', { map: textTexture('Padu · Dapur Banjar', { w: 640, h: 140, bg: '#3b1a0a', color: '#ffe7b0', font: 'bold 54px system-ui' }) }));
+    signB.position.set(-1.25, F + 2.7, -6.1); signB.rotation.y = Math.PI; interior.add(signB);
+  }
+
+  // ---- tungku kayu (dapur tanah) dengan kuali & panci ----
+  const fireLight = new THREE.PointLight('#ff8a3a', 6, 5, 2);
+  {
+    const g = new THREE.Group(); g.position.set(-2.8, F, -12.55); kitchen.add(g);
+    const clay = std('#9c5a36', { roughness: 0.95 });
+    box(g, 1.8, 0.6, 0.65, clay, 0, 0.3, 0);
+    box(g, 1.9, 0.06, 0.72, std('#7a4128'), 0, 0.62, 0);
+    for (const x of [-0.45, 0.45]) {
+      cyl(g, 0.24, 0.24, 0.02, std('#1a0f0a'), x, 0.655, 0, 20);
+      const mouth = box(g, 0.32, 0.22, 0.02, std('#2a120a'), x, 0.22, 0.33);
+      const fire = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.16), new THREE.MeshBasicMaterial({ color: '#ff9a2e', transparent: true, opacity: 0.9 }));
+      fire.position.set(x, 0.2, 0.345); g.add(fire);
+      updaters.push((t) => { fire.material.opacity = 0.65 + Math.sin(t * 13 + x * 7) * 0.2 + Math.sin(t * 7.3) * 0.1; fire.scale.y = 0.85 + Math.sin(t * 11 + x) * 0.15; });
+    }
+    // kayu bakar
+    for (let i = 0; i < 4; i++) { const w = cyl(g, 0.04, 0.045, 0.7, std('#6b4226'), -0.2 + i * 0.12, 0.05, 0.62, 8); w.rotation.set(Math.PI / 2, 0, 0.15 * (i - 1.5)); }
+    // kuali (wajan)
+    const wok = new THREE.Mesh(new THREE.SphereGeometry(0.3, 24, 12, 0, Math.PI * 2, Math.PI / 2, Math.PI / 4), std('#2b2b2b', { metalness: 0.6, roughness: 0.4, side: THREE.DoubleSide }));
+    wok.position.set(-0.45, 0.88, 0); wok.castShadow = true; g.add(wok);
+    const wokFood = cyl(g, 0.2, 0.2, 0.02, std('#9e1f14', { roughness: 0.2 }), -0.45, 0.7, 0, 20);
+    // panci
+    cyl(g, 0.22, 0.2, 0.32, std('#b9bcc2', { metalness: 0.7, roughness: 0.3 }), 0.45, 0.82, 0, 22);
+    cyl(g, 0.23, 0.23, 0.03, std('#9a9da3', { metalness: 0.7 }), 0.45, 0.99, 0, 22);
+    cyl(g, 0.03, 0.03, 0.05, std('#222'), 0.45, 1.03, 0, 8);
+    const puffs = [];
+    for (let i = 0; i < 6; i++) { const p = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 6), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.2, depthWrite: false })); g.add(p); puffs.push(p); }
+    updaters.push((t) => puffs.forEach((p, i) => {
+      const k = (t * 0.3 + i / 6) % 1;
+      p.position.set(0.45 + Math.sin(t + i) * 0.06, 1.05 + k * 0.9, Math.cos(i * 2) * 0.05);
+      p.scale.setScalar(0.6 + k * 1.8); p.material.opacity = 0.22 * (1 - k);
+    }));
+    fireLight.position.set(-2.8, F + 0.45, -11.9);
+    kitchen.add(fireLight);
+    updaters.push((t) => { fireLight.intensity = 5 + Math.sin(t * 17) * 1.2 + Math.sin(t * 9.1) * 0.8; });
+    // gantungan bawang & cabai di dinding
+    for (const [x, col] of [[-3.9, '#a8416a'], [-3.55, '#c4161c'], [-1.7, '#e9dfc9']]) {
+      cyl(kitchen, 0.004, 0.004, 0.7, std('#5a3a1a'), x, F + 1.95, -12.88, 4);
+      for (let i = 0; i < 6; i++) { const b = new THREE.Mesh(col === '#c4161c' ? new THREE.ConeGeometry(0.025, 0.12, 6) : new THREE.SphereGeometry(0.045, 8, 6), std(col)); b.position.set(x + (i % 2 ? 0.03 : -0.03), F + 1.65 + i * 0.08, -12.85); if (col === '#c4161c') b.rotation.x = Math.PI; kitchen.add(b); }
+    }
+    addCollider(-3.75, -1.85, -13, -12.15, F - 0.5, F + 1.2);
+  }
+
+  // ---- lemari dapur & rak bumbu ----
+  {
+    const g = new THREE.Group(); g.position.set(2.7, F, -12.7); kitchen.add(g);
+    box(g, 1.4, 1.8, 0.08, midWood, 0, 0.9, -0.2);
+    for (const s of [-1, 1]) box(g, 0.06, 1.8, 0.45, midWood, s * 0.67, 0.9, 0);
+    const jarCols = ['#f2b51e', '#c4161c', '#a8416a', '#e9dfc9', '#7a4128', '#4f9a2e', '#e07a2a'];
+    let k = 0;
+    for (const y of [0.05, 0.5, 0.95, 1.4]) {
+      box(g, 1.34, 0.04, 0.42, midWood, 0, y, 0);
+      if (y > 1.3) continue;
+      for (let i = 0; i < 5; i++) {
+        const c = jarCols[k++ % jarCols.length];
+        const jar = cyl(g, 0.07, 0.07, 0.2, new THREE.MeshPhysicalMaterial({ color: '#dfeff2', transparent: true, opacity: 0.45, roughness: 0.1 }), -0.5 + i * 0.25, y + 0.12, 0, 14);
+        cyl(g, 0.062, 0.062, 0.13, std(c, { roughness: 0.9 }), -0.5 + i * 0.25, y + 0.09, 0, 12);
+        cyl(g, 0.073, 0.073, 0.03, std('#8b5a2b'), -0.5 + i * 0.25, y + 0.235, 0, 14);
+      }
+    }
+    box(g, 1.4, 0.06, 0.46, midWood, 0, 1.8, 0);
+    // rantang & kukusan di atas lemari
+    for (let i = 0; i < 3; i++) cyl(g, 0.12, 0.12, 0.09, std(['#c4261c', '#2f6f8f', '#e0a43a'][i], { metalness: 0.3, roughness: 0.4 }), -0.35, 1.88 + i * 0.095, 0, 18);
+    const kuk = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.32, 18, 1, true), std('#c9a45a', { map: janurTexture(), side: THREE.DoubleSide }));
+    kuk.position.set(0.3, 1.99, 0); kuk.rotation.x = Math.PI; g.add(kuk);
+    addCollider(1.95, 3.45, -13, -12.45, F - 0.5, F + 2);
+  }
+
+  // ---- tempayan air ----
+  {
+    const jar = new THREE.Mesh(new THREE.SphereGeometry(0.3, 18, 14), std('#7a3d1a', { roughness: 0.4 }));
+    jar.scale.y = 1.2; jar.position.set(4.0, F + 0.36, -12.55); jar.castShadow = true; kitchen.add(jar);
+    cyl(kitchen, 0.16, 0.2, 0.1, std('#7a3d1a'), 4.0, F + 0.74, -12.55, 14);
+    const gayung = cyl(kitchen, 0.07, 0.06, 0.08, std('#8b5a2b'), 4.0, F + 0.83, -12.5, 12);
+    addCollider(3.65, 4.4, -12.95, -12.15, F - 0.5, F + 1);
+  }
+
+  // ---- meja masak: talenan, pisau, cobek, ayam potong, bumbu ----
+  {
+    const g = new THREE.Group(); g.position.set(2.55, F, -6.55); kitchen.add(g);
+    box(g, 1.5, 0.06, 0.62, lightWood, 0, 0.82, 0);
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) box(g, 0.06, 0.8, 0.06, darkWood, sx * 0.68, 0.4, sz * 0.26);
+    box(g, 1.4, 0.04, 0.5, midWood, 0, 0.25, 0);
+    box(g, 0.5, 0.04, 0.32, std('#c89a5e', { roughness: 0.8 }), -0.35, 0.87, 0);
+    box(g, 0.26, 0.008, 0.045, std('#cfd3d8', { metalness: 0.9, roughness: 0.2 }), -0.3, 0.895, 0.1);
+    box(g, 0.1, 0.02, 0.04, std('#4a2412'), -0.48, 0.897, 0.1);
+    for (let i = 0; i < 4; i++) { const m = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 8), std('#f0b8a0', { roughness: 0.5 })); m.scale.set(1.4, 0.6, 1); m.position.set(-0.42 + (i % 2) * 0.12, 0.91, -0.06 + Math.floor(i / 2) * 0.09); g.add(m); }
+    // cobek & ulekan
+    const cobek = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.1, 0.06, 20), std('#3a3a3a', { roughness: 1 })); cobek.position.set(0.25, 0.88, 0); g.add(cobek);
+    cyl(g, 0.13, 0.13, 0.005, std('#c8321f'), 0.25, 0.91, 0, 20);
+    const ulek = cyl(g, 0.025, 0.03, 0.16, std('#5a4a3a'), 0.33, 0.95, 0.04, 8); ulek.rotation.z = 0.8;
+    // bawang & cabai
+    for (let i = 0; i < 8; i++) { const b = new THREE.Mesh(new THREE.SphereGeometry(0.025, 8, 6), std(i % 2 ? '#a8416a' : '#f1e6d0')); b.position.set(0.55 + (i % 3) * 0.05, 0.87, -0.15 + Math.floor(i / 3) * 0.05); g.add(b); }
+    for (let i = 0; i < 5; i++) { const c = new THREE.Mesh(new THREE.ConeGeometry(0.015, 0.1, 6), std('#c4161c')); c.position.set(0.55 + i * 0.03, 0.865, 0.15); c.rotation.set(Math.PI / 2, 0, 0.3 * i); g.add(c); }
+    // bakul berisi ketupat
+    cyl(g, 0.2, 0.15, 0.14, std('#b08840', { map: janurTexture() }), 0.5, 0.32, 0, 16);
+    for (let i = 0; i < 4; i++) { const k = makeKetupat(0.1, false); k.position.set(0.44 + (i % 2) * 0.12, 0.42, -0.05 + Math.floor(i / 2) * 0.1); k.rotation.y = i; g.add(k); }
+    addCollider(1.75, 3.35, -6.9, -6.15, F - 0.5, F + 1);
+  }
+
+  // ---- lesung & alu (penumbuk padi) ----
+  {
+    const g = new THREE.Group(); g.position.set(-3.25, F, -6.6); kitchen.add(g);
+    box(g, 1.2, 0.36, 0.38, std('#6b4226', { roughness: 0.9 }), 0, 0.18, 0);
+    box(g, 0.9, 0.02, 0.2, std('#2a170c'), 0, 0.361, 0);
+    for (let i = 0; i < 30; i++) { const r = new THREE.Mesh(new THREE.SphereGeometry(0.012, 5, 4), std('#f4efe0')); r.position.set(-0.35 + Math.random() * 0.7, 0.37, -0.07 + Math.random() * 0.14); g.add(r); }
+    const alu = cyl(g, 0.035, 0.035, 1.6, std('#8b5a2b'), 0.75, 0.78, -0.1, 10); alu.rotation.z = -0.35;
+    addCollider(-3.9, -2.6, -6.85, -6.35, F - 0.5, F + 1);
+  }
+
+  // ---- tikar purun di lantai ----
+  {
+    const mat = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.4), std('#ffffff', { map: tex('carpet', 1, 1), roughness: 1, color: '#d8c08a' }));
+    mat.rotation.x = -Math.PI / 2; mat.position.set(0, F + 0.012, -11.6); mat.receiveShadow = true; kitchen.add(mat);
+  }
+
+  // ---- gantungan ketupat (tali bambu di atas meja saji) ----
+  const hangingKetupat = [];
+  {
+    const pole = cyl(kitchen, 0.035, 0.035, 3.4, std('#c9b26a', { roughness: 0.8 }), 0, F + 2.62, -9.6, 10);
+    pole.rotation.z = Math.PI / 2;
+    for (const x of [-1.6, 1.6]) cyl(kitchen, 0.01, 0.01, 0.28, std('#5a3a1a'), x, F + 2.76, -9.6, 4);
+    for (let i = 0; i < 9; i++) {
+      const pivot = new THREE.Group(); pivot.position.set(-1.45 + i * 0.36, F + 2.6, -9.6); kitchen.add(pivot);
+      const L = 0.22 + (i % 3) * 0.12;
+      const str = cyl(pivot, 0.004, 0.004, L, std('#6b5a2a'), 0, -L / 2, 0, 4);
+      const k = makeKetupat(0.16); k.position.y = -L - 0.1; pivot.add(k);
+      hangingKetupat.push(pivot);
+    }
+    updaters.push((t) => hangingKetupat.forEach((p, i) => { p.rotation.z = Math.sin(t * 1.3 + i) * 0.05; p.rotation.x = Math.cos(t * 1.1 + i * 0.7) * 0.04; }));
+  }
+
+  // ---- meja saji: 5 hidangan muncul saat QR dipindai ----
+  const dishSlots = [];
+  let dishTitle;
+  {
+    const g = new THREE.Group(); g.position.set(0, F, -9.6); kitchen.add(g);
+    box(g, 2.8, 0.07, 1.05, std('#7a4128', { roughness: 0.6 }), 0, 0.76, 0);
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) box(g, 0.08, 0.74, 0.08, darkWood, sx * 1.3, 0.37, sz * 0.44);
+    const runner = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 0.45), std('#ffffff', { map: tex('sasirangan', 4, 1) }));
+    runner.rotation.x = -Math.PI / 2; runner.position.y = 0.797; g.add(runner);
+    for (let i = 0; i < 5; i++) {
+      const s = new THREE.Group(); s.position.set(-1.08 + i * 0.54, 0.8, 0); g.add(s);
+      const mini = buildStage(6 + i); mini.scale.setScalar(0.38); mini.visible = false; s.add(mini);
+      const ghost = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.13, 0.03, 20), new THREE.MeshStandardMaterial({ color: '#ffffff', transparent: true, opacity: 0.35 }));
+      ghost.position.y = 0.02; s.add(ghost);
+      const q = new THREE.Sprite(new THREE.SpriteMaterial({ map: textTexture('?', { w: 128, h: 128, color: '#ffd36b', font: 'bold 100px system-ui' }), transparent: true }));
+      q.scale.set(0.2, 0.2, 1); q.position.y = 0.2; s.add(q);
+      const name = new THREE.Sprite(new THREE.SpriteMaterial({ map: textTexture(STAGES[5 + i].name, { w: 512, h: 96, bg: 'rgba(43,22,8,0.85)', color: '#fff', font: 'bold 44px system-ui' }), transparent: true }));
+      name.scale.set(0.5, 0.095, 1); name.position.y = 0.36; name.visible = false; s.add(name);
+      dishSlots.push({ mini, ghost, q, name });
+    }
+    dishTitle = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true }));
+    dishTitle.scale.set(1.5, 0.39, 1); dishTitle.position.y = 1.72; g.add(dishTitle);
+    addCollider(-1.45, 1.45, -10.2, -9.0, F - 0.5, F + 1);
+    updaters.push((t) => {
+      dishSlots.forEach((s, i) => { if (s.mini.visible) { s.mini.userData.update?.(t + i); s.mini.rotation.y = t * 0.4 + i; } s.q.position.y = 0.2 + Math.sin(t * 2 + i) * 0.03; });
+      dishTitle.position.y = 1.72 + Math.sin(t * 1.2) * 0.03;
+    });
+  }
+  function setDishes(list) {
+    const set = new Set(list);
+    let n = 0;
+    dishSlots.forEach((s, i) => { const on = set.has(6 + i); if (on) n++; s.mini.visible = on; s.ghost.visible = !on; s.q.visible = !on; s.name.visible = on; });
+    dishTitle.material.map?.dispose();
+    dishTitle.material.map = textTexture([
+      { text: 'Masakan Banjar', font: 'bold 64px Georgia, serif', color: '#2b1608' },
+      { text: n === 5 ? '🎉 Lengkap! Dari pekarangan ke meja makan' : `${n} / 5 hidangan dari ayam kampung`, font: 'bold 36px system-ui', color: n === 5 ? '#1d7a3a' : '#7a3418' },
+    ], { w: 768, h: 200, bg: 'rgba(255,244,214,0.92)' });
+    dishTitle.material.needsUpdate = true;
+  }
+  setDishes([]);
+
+  // lampu dapur
+  hangingLamp(-2.2, -8.4, F + KH, 12);
+  hangingLamp(2.2, -10.9, F + KH, 12);
+  pottedPlant(kitchen, -4.0, F, -9.35, 0.8);
+
+  // ======================================================
   // STASIUN QR + ALAS MODEL
   // ======================================================
   const qrLoader = new THREE.TextureLoader();
@@ -730,12 +958,18 @@ export function buildWorld(scene, { qrHost, onCluck } = {}) {
     { n: 3, board: [0, -5.91], rotY: 0, ped: [1.05, -5.35] },
     { n: 4, board: [4.91, -4.5], rotY: -Math.PI / 2, ped: [4.35, -3.55] },
     { n: 5, board: [4.91, 2.5], rotY: -Math.PI / 2, ped: [4.35, 3.45] },
+    // padu (dapur): 5 masakan Banjar
+    { n: 6, board: [-4.41, -7.4], rotY: Math.PI / 2, ped: [-3.85, -8.4] },
+    { n: 7, board: [-4.41, -10.6], rotY: Math.PI / 2, ped: [-3.85, -11.6] },
+    { n: 8, board: [0, -12.91], rotY: 0, ped: [1.05, -12.4] },
+    { n: 9, board: [4.41, -10.6], rotY: -Math.PI / 2, ped: [3.85, -11.6] },
+    { n: 10, board: [4.41, -7.4], rotY: -Math.PI / 2, ped: [3.85, -8.4] },
   ];
 
   function labelTexture(n, scanned) {
     const s = STAGES[n - 1];
     return textTexture([
-      { text: `TAHAP ${n}${scanned ? '  ✓' : ''}`, font: 'bold 60px system-ui, sans-serif', color: scanned ? '#7dffa0' : '#ffd36b' },
+      { text: `${s.label.toUpperCase()}${scanned ? '  ✓' : ''}`, font: 'bold 60px system-ui, sans-serif', color: scanned ? '#7dffa0' : '#ffd36b' },
       { text: scanned ? `${s.emoji} ${s.name}` : '📱 Scan dengan HP', font: 'bold 50px system-ui, sans-serif', color: '#ffffff' },
     ], { w: 640, h: 220, bg: '#2b1608' });
   }
@@ -809,14 +1043,14 @@ export function buildWorld(scene, { qrHost, onCluck } = {}) {
       },
     };
     stations[sp.n] = st;
-    qr.userData.interact = { label: () => `Perbesar QR Tahap ${sp.n} (untuk di-scan HP)`, action: () => ({ type: 'qr', n: sp.n }) };
+    qr.userData.interact = { label: () => `Perbesar QR ${STAGES[sp.n - 1].label} (untuk dipindai HP)`, action: () => ({ type: 'qr', n: sp.n }) };
     interactables.push(qr);
     label.userData.interact = qr.userData.interact;
     interactables.push(label);
     const pedHit = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.8, 8), new THREE.MeshBasicMaterial({ visible: false }));
     pedHit.position.y = 0.9; ped.add(pedHit);
     pedHit.userData.interact = {
-      label: () => (st.scanned ? `Lihat info: ${STAGES[sp.n - 1].name}` : `Alas Tahap ${sp.n} — scan QR di dinding untuk memunculkan model`),
+      label: () => (st.scanned ? `Lihat info: ${STAGES[sp.n - 1].name}` : `Alas ${STAGES[sp.n - 1].label} — pindai QR di dinding untuk memunculkan model`),
       action: () => (st.scanned ? { type: 'info', n: sp.n } : null),
     };
     interactables.push(pedHit);
@@ -1019,7 +1253,7 @@ export function buildWorld(scene, { qrHost, onCluck } = {}) {
       b.position.set((R() - 0.5) * 0.9, 0.4, (R() - 0.5) * 0.9); b.castShadow = true; g.add(b);
     }
   }
-  const clear = (x, z) => (Math.abs(x) < 12 && z > -10 && z < 13) || (Math.abs(x) < 2.5 && z > 9 && z < 30) || (x > 9 && x < 23 && z > -9 && z < 17) || (x > 4 && x < 11 && z < -20);
+  const clear = (x, z) => (Math.abs(x) < 12 && z > -16 && z < 13) || (Math.abs(x) < 2.5 && z > 9 && z < 30) || (x > 9 && x < 23 && z > -9 && z < 17) || (x > 4 && x < 11 && z < -20);
   let placed = 0;
   while (placed < 26) {
     const x = (R() - 0.5) * 110, z = -22 + R() * 80;
@@ -1158,6 +1392,7 @@ export function buildWorld(scene, { qrHost, onCluck } = {}) {
   function groundHeight(x, z) {
     if (x >= -5.15 && x <= 5.15 && z >= -6.1 && z <= 7.05) return FH;
     if (Math.abs(x) >= 5 && Math.abs(x) <= 8.1 && z >= -3.1 && z <= 1.1) return FH;
+    if (x >= -4.65 && x <= 4.65 && z >= -13.15 && z <= -6) return FH; // padu (dapur)
     if (x > -1.05 && x < 1.05 && z > 7.0 && z <= STAIR_END + 0.05) {
       return Math.max(0, Math.min(FH, Math.ceil(((STAIR_END - z) / RUN) - 0.001) * RISE));
     }
@@ -1183,9 +1418,12 @@ export function buildWorld(scene, { qrHost, onCluck } = {}) {
         const on = list.includes(s.n);
         if (on !== s.scanned || (newStage === s.n)) s.setScanned(on, newStage === s.n);
       }
-      setCycle(list);
-      if (newStage && list.length === 5) {
-        for (let i = 0; i < 6; i++) setTimeout(() => spawnSparkles(new THREE.Vector3((Math.random() - 0.5) * 3, F + 1.5, -1.2 + (Math.random() - 0.5) * 3), ['#ffd23f', '#e8443a', '#7dffa0', '#5ab0ff'][i % 4], 120, 1.3), i * 250);
+      setCycle(list.filter((n) => n <= 5));
+      setDishes(list);
+      const grp = newStage ? (newStage <= 5 ? 'daur' : 'masak') : null;
+      if (grp && GROUPS[grp].stages.every((n) => list.includes(n))) {
+        const cz = grp === 'daur' ? -1.2 : -9.6;
+        for (let i = 0; i < 6; i++) setTimeout(() => spawnSparkles(new THREE.Vector3((Math.random() - 0.5) * 3, F + 1.5, cz + (Math.random() - 0.5) * 2), ['#ffd23f', '#e8443a', '#7dffa0', '#5ab0ff'][i % 4], 120, 1.3), i * 250);
       }
     },
     update(t, dt) { for (const u of updaters) u(t, dt); },

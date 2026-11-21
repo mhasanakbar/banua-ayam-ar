@@ -1,6 +1,6 @@
 // Kamera AR: buka kamera HP → deteksi QR → model 3D menempel di atas QR.
 import * as THREE from 'three';
-import { STAGES, buildStage } from './models.js';
+import { STAGES, GROUPS, TOTAL, buildStage } from './models.js';
 import { solvePose } from './ar-pose.js';
 import { net } from './net.js';
 import { openQuiz } from './quiz.js';
@@ -19,7 +19,7 @@ let current = 0;               // tahap yang sedang tampil
 const triggered = new Set();   // tahap yang sudah memicu di sesi ini
 const params = new URLSearchParams(location.search);
 const hintStage = Number(params.get('s')) || 0;
-if (hintStage >= 1 && hintStage <= 5) $('#noCamLink').href = `scan.html?s=${hintStage}`;
+if (hintStage >= 1 && hintStage <= TOTAL) $('#noCamLink').href = `scan.html?s=${hintStage}`;
 
 function renderChips() {
   $('#chips').innerHTML = STAGES.map((s) => {
@@ -92,8 +92,10 @@ function setLabel(s) {
   g.fillStyle = 'rgba(43,22,8,0.85)';
   g.beginPath(); g.roundRect(6, 14, 500, 100, 50); g.fill();
   g.strokeStyle = s.color; g.lineWidth = 6; g.stroke();
-  g.fillStyle = '#fff4d6'; g.font = 'bold 50px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillText(`${s.n}. ${s.name}`, 256, 66);
+  g.fillStyle = '#fff4d6'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  let size = 50;
+  do { g.font = `bold ${size}px system-ui, sans-serif`; size -= 2; } while (g.measureText(s.name).width > 450 && size > 24);
+  g.fillText(s.name, 256, 66);
   labelTex.needsUpdate = true;
 }
 
@@ -112,7 +114,8 @@ function setStage(n) {
   const s = STAGES[n - 1];
   $('#hintCard').classList.add('hidden');
   $('#stageInfo').classList.remove('hidden');
-  $('#sName').textContent = `${s.emoji} Tahap ${n}: ${s.name}`;
+  $('#sName').textContent = `${s.emoji} ${s.label}: ${s.name}`;
+  $('#sTipsTitle').textContent = s.tipsTitle;
   $('#sTime').textContent = `⏱ ${s.time}`;
   $('#sDesc').textContent = s.desc;
   $('#sFacts').innerHTML = s.facts.map((f) => `<li>${f}</li>`).join('');
@@ -220,7 +223,7 @@ function requestDetect() {
 }
 
 const stageFromText = (t) => {
-  const m = t.match(/[?&]s=([1-5])\b/) || t.match(/\/scan\/([1-5])\b/);
+  const m = t.match(/[?&]s=(10|[1-9])\b/) || t.match(/\/scan\/(10|[1-9])\b/);
   return m ? Number(m[1]) : 0;
 };
 
@@ -260,13 +263,13 @@ function onTrigger(n) {
   beep(n);
   const p = document.createElement('div');
   p.id = 'pop';
-  p.innerHTML = `✨ ${s.emoji} ${s.name} muncul!<small>Tahap ${n} dari 5 · tampil juga di laptop 🖥️</small>`;
+  p.innerHTML = `✨ ${s.emoji} ${s.name} muncul!<small>${s.label} · ${GROUPS[s.group].title} · tampil juga di rumah 3D 🏠</small>`;
   document.querySelectorAll('#pop').forEach((x) => x.remove());
   document.body.appendChild(p);
   setTimeout(() => p.remove(), 2600);
   net.scan(n).then((d) => {
     scanned = d.scanned; renderChips();
-    if (d.isNew && scanned.length === 5) setTimeout(() => $('#done').classList.remove('hidden'), 2200);
+    if (d.isNew && GROUPS[s.group].stages.every((k) => scanned.includes(k))) setTimeout(() => showDone(s.group), 2200);
   }).catch(() => {});
 }
 
@@ -321,6 +324,21 @@ let wantPhoto = false;
 $('#bPhoto').onclick = () => { wantPhoto = true; };
 $('#photoClose').onclick = () => $('#photo').classList.add('hidden');
 $('#doneClose').onclick = () => $('#done').classList.add('hidden');
+$('#postBtn2').onclick = () => openQuiz('post');
+function showDone(group) {
+  const all = scanned.length === TOTAL;
+  if (group === 'daur') {
+    $('#doneEmoji').textContent = '🎉🐔🎉';
+    $('#doneTitle').textContent = 'Daur hidup lengkap!';
+    $('#doneText').innerHTML = '🥚 → 🔬 → 🐣 → 🐥 → 🐔 → 🥚<br/>Kamu sudah memunculkan kelima tahap daur hidup ayam. Daur hidup terus berulang!';
+  } else {
+    $('#doneEmoji').textContent = '🎉🍲🎉';
+    $('#doneTitle').textContent = 'Masakan Banjar lengkap!';
+    $('#doneText').innerHTML = '🍲 · 🌶️ · 🍛 · 🍙 · 🥥<br/>Dari ayam kampung di pekarangan menjadi lima masakan khas Banjar.';
+  }
+  if (all) $('#doneText').innerHTML += '<br/><b>Semua 10 QR sudah ditemukan! 🏆</b>';
+  $('#done').classList.remove('hidden');
+}
 $('#postBtn').onclick = () => { $('#done').classList.add('hidden'); openQuiz('post'); };
 $('#preBtn').onclick = () => openQuiz('pre');
 
@@ -334,7 +352,7 @@ function takePhoto() {
   g.drawImage(canvas, 0, 0, c.width, c.height);
   g.fillStyle = 'rgba(43,22,8,.75)'; g.fillRect(0, c.height - 46 * dpr, c.width, 46 * dpr);
   g.fillStyle = '#ffd36b'; g.font = `bold ${18 * dpr}px system-ui`; g.textAlign = 'center';
-  g.fillText(current ? `${STAGES[current - 1].emoji} Tahap ${current}: ${STAGES[current - 1].name} — Rumah Banjar` : 'Rumah Banjar AR', c.width / 2, c.height - 17 * dpr);
+  g.fillText(current ? `${STAGES[current - 1].emoji} ${STAGES[current - 1].label}: ${STAGES[current - 1].name} — Banua Ayam AR` : 'Banua Ayam AR', c.width / 2, c.height - 17 * dpr);
   const url = c.toDataURL('image/jpeg', 0.9);
   $('#photoImg').src = url; $('#photoSave').href = url;
   $('#photo').classList.remove('hidden');
@@ -386,7 +404,7 @@ function loop() {
   // status & bingkai
   if (running && now > statusTimer) {
     const st = $('#status');
-    if (tracked) { st.textContent = `✅ QR Tahap ${current} terdeteksi`; st.className = 'ok'; }
+    if (tracked) { st.textContent = `✅ QR ${STAGES[current - 1].label} terdeteksi`; st.className = 'ok'; }
     else if (current) { st.textContent = '🔍 QR tidak terlihat — model melayang'; st.className = ''; }
     else { st.textContent = '🔍 Arahkan kamera ke kode QR'; st.className = ''; }
   }

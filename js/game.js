@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { buildWorld, FH } from './world.js';
-import { STAGES, buildStage } from './models.js';
+import { STAGES, GROUPS, TOTAL, buildStage, byNum } from './models.js';
 import { initAudio, sfx, toggleMusic } from './audio.js';
 import { net } from './net.js';
 
@@ -110,7 +110,7 @@ function updatePlayer(dt) {
 }
 
 function insideHouse(p) {
-  return (p.x > -5 && p.x < 5 && p.z > -6 && p.z < 4) || (Math.abs(p.x) > 5 && Math.abs(p.x) < 8 && p.z > -3 && p.z < 1);
+  return (p.x > -5 && p.x < 5 && p.z > -6 && p.z < 4) || (Math.abs(p.x) > 5 && Math.abs(p.x) < 8 && p.z > -3 && p.z < 1) || (p.x > -4.5 && p.x < 4.5 && p.z > -13 && p.z <= -6);
 }
 
 function jump() {
@@ -263,23 +263,30 @@ function sleep() {
 // ---------------- HUD ----------------
 let scanned = [];
 const chips = $('#chips');
-STAGES.forEach((s) => {
-  const d = document.createElement('div');
-  d.className = 'chip'; d.id = 'chip' + s.n; d.title = `Tahap ${s.n}`;
-  d.innerHTML = `<span class="num">${s.n}</span><span class="e">?</span>`;
-  d.onclick = () => scanned.includes(s.n) && openInfo(s.n);
-  chips.appendChild(d);
-});
+for (const g of Object.values(GROUPS)) {
+  const row = document.createElement('div');
+  row.className = 'chipRow';
+  row.innerHTML = `<span class="rowLbl">${g.short}</span>`;
+  g.stages.forEach((n, i) => {
+    const s = STAGES[n - 1];
+    const d = document.createElement('div');
+    d.className = 'chip'; d.id = 'chip' + s.n; d.title = s.label;
+    d.innerHTML = `<span class="num">${i + 1}</span><span class="e">?</span>`;
+    d.onclick = () => scanned.includes(s.n) && openInfo(s.n);
+    row.appendChild(d);
+  });
+  chips.appendChild(row);
+}
 function renderProgress(pop) {
   STAGES.forEach((s) => {
     const el = $('#chip' + s.n), on = scanned.includes(s.n);
     el.classList.toggle('on', on);
     el.querySelector('.e').textContent = on ? s.emoji : '?';
-    el.title = on ? `Tahap ${s.n}: ${s.name}` : `Tahap ${s.n}: belum ditemukan`;
+    el.title = on ? `${s.label}: ${s.name}` : `${s.label}: belum ditemukan`;
     if (pop === s.n) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
   });
-  $('#pcount').textContent = `${scanned.length}/5`;
-  $('#pfill').style.width = (scanned.length / 5) * 100 + '%';
+  $('#pcount').textContent = `${scanned.length}/${TOTAL}`;
+  $('#pfill').style.width = (scanned.length / TOTAL) * 100 + '%';
 }
 
 function toast(html, big = false, ms = 3800) {
@@ -296,7 +303,8 @@ function locationName(p) {
     if (p.x < -5) return '🛏️ Anjung Kiri — Kamar Tidur';
     if (p.x > 5) return '🍚 Anjung Kanan — Ruang Makan';
     if (p.z > 4) return '🪵 Surambi (Teras)';
-    return '🏠 Ruang Utama — cari 5 QR!';
+    if (p.z < -6) return '🍳 Padu (Dapur) — 5 QR masakan Banjar';
+    return '🏠 Ruang Utama — 5 QR daur hidup';
   }
   if (p.z < -23.5) return '🛶 Dermaga Sungai';
   if (p.x > 9.5 && p.x < 23 && p.z > -8 && p.z < 16) return '🐔 Kandang Ayam';
@@ -323,6 +331,7 @@ function drawMinimap() {
   // rumah
   mctx.fillStyle = '#b9773f';
   mctx.fillRect(-5 * s, -6 * s, 10 * s, 13 * s);
+  mctx.fillRect(-4.5 * s, -13 * s, 9 * s, 7 * s);
   mctx.fillRect(-8 * s, -3 * s, 3 * s, 4 * s);
   mctx.fillRect(5 * s, -3 * s, 3 * s, 4 * s);
   mctx.fillRect(-1 * s, 7 * s, 2 * s, 3.2 * s);
@@ -391,7 +400,7 @@ document.querySelectorAll('.overlay').forEach((o) => o.addEventListener('click',
 let qrOpenN = 0;
 function openQR(n) {
   qrOpenN = n;
-  $('#qrTitle').textContent = `📱 Scan QR Tahap ${n}`;
+  $('#qrTitle').textContent = `📱 Pindai QR ${STAGES[n - 1].label}`;
   $('#qrBig').src = net.qrDataUrl(net.arUrl(n), 10, 3);
   $('#qrUrl').textContent = net.arUrl(n);
   $('#qrDone').classList.toggle('hidden', net.server);
@@ -427,6 +436,9 @@ const viewer = (() => {
     if (v.model) s.remove(v.model);
     v.model = buildStage(n); v.n = n;
     s.add(v.model);
+    const dish = n > 5; // masakan lebih pendek & lebar: kamera lebih dekat
+    ctrl.target.set(0, dish ? 0.12 : 0.45, 0);
+    cam.position.set(...(dish ? [0.9, 0.9, 1.15] : [1.6, 1.3, 2.2]));
     v.active = true;
   };
   v.render = (t) => {
@@ -442,13 +454,15 @@ const viewer = (() => {
 
 function openInfo(n) {
   const s = STAGES[n - 1];
-  $('#infoBadge').textContent = `TAHAP ${n} DARI 5`;
+  $('#infoBadge').textContent = `${s.label.toUpperCase()} · ${GROUPS[s.group].title.toUpperCase()}`;
+  $('#infoFactsTitle').textContent = s.factsTitle;
+  $('#infoTipsTitle').textContent = s.tipsTitle;
   $('#infoName').textContent = `${s.emoji} ${s.name}`;
   $('#infoTime').textContent = `⏱ ${s.time}`;
   $('#infoDesc').textContent = s.desc;
   $('#infoFacts').innerHTML = s.facts.map((f) => `<li>${f}</li>`).join('');
   $('#infoTips').innerHTML = s.tips.map((f) => `<li>${f}</li>`).join('');
-  const sorted = [...scanned].sort();
+  const sorted = [...scanned].sort(byNum);
   const i = sorted.indexOf(n);
   $('#infoPrev').disabled = i <= 0;
   $('#infoNext').disabled = i < 0 || i >= sorted.length - 1;
@@ -456,7 +470,7 @@ function openInfo(n) {
   viewer.show(n);
 }
 function navInfo(d) {
-  const sorted = [...scanned].sort();
+  const sorted = [...scanned].sort(byNum);
   const i = sorted.indexOf(viewer.n) + d;
   if (i >= 0 && i < sorted.length) openInfo(sorted[i]);
 }
@@ -476,7 +490,7 @@ function openCycle() {
     html += `<path d="M${x0} ${y0} A36 36 0 0 1 ${x1} ${y1}" fill="none" stroke="${on ? '#ffd36b' : '#ffffff40'}" stroke-width="1.2" ${on ? '' : 'stroke-dasharray="2 2"'} marker-end="url(#ah)"/>`;
   }
   html += '</svg><div class="cycleCenter">🔁<br/>Daur<br/>Hidup</div>';
-  STAGES.forEach((s, i) => {
+  STAGES.filter((s) => s.group === 'daur').forEach((s, i) => {
     const [x, y] = pos(i);
     const on = scanned.includes(s.n);
     html += `<div class="cnode ${on ? 'on' : ''}" data-n="${s.n}" style="left:${x}%;top:${y}%"><div class="circle">${on ? s.emoji : '?'}</div><div class="lbl">${s.n}. ${on ? s.name : '???'}<small>${on ? s.time : 'belum ditemukan'}</small></div></div>`;
@@ -524,7 +538,7 @@ async function initNetwork() {
   const demo = $('#demoBtns');
   STAGES.forEach((s) => {
     const b = document.createElement('button');
-    b.className = 'btn ghost'; b.textContent = `${s.emoji} Tahap ${s.n}`;
+    b.className = 'btn ghost'; b.textContent = `${s.emoji} ${s.label}`;
     b.onclick = () => net.scan(s.n);
     demo.appendChild(b);
   });
@@ -543,13 +557,29 @@ function onScan(d) {
   if (d.isNew) {
     applyScanned(d.scanned, d.stage);
     sfx.chime(d.stage);
-    toast(`📱 ${d.device} memindai <b>Tahap ${d.stage}</b>: ${s.emoji} ${s.name}!<br/><span style="font-weight:400">Model 3D muncul di alas samping papan QR ✨</span>`, true, 5200);
-    if (d.scanned.length === 5) setTimeout(() => { sfx.fanfare(); if (modal) closeModal(); openModal('celebrate'); }, 1600);
+    toast(`📱 ${d.device} memindai <b>${s.label}</b>: ${s.emoji} ${s.name}!<br/><span style="font-weight:400">Model 3D muncul di alas samping papan QR ✨</span>`, true, 5200);
+    const g = GROUPS[s.group];
+    if (g.stages.every((n) => d.scanned.includes(n))) setTimeout(() => { showCelebrate(s.group, d.scanned.length === TOTAL); sfx.fanfare(); if (modal) closeModal(); openModal('celebrate'); }, 1600);
     else if (modal === 'qrModal' && qrOpenN === d.stage) setTimeout(() => { if (modal === 'qrModal') closeModal(); }, 1500);
   } else {
     applyScanned(d.scanned, null);
-    toast(`📱 Tahap ${d.stage} (${s.name}) discan ulang`);
+    toast(`📱 ${s.label} (${s.name}) dipindai ulang`);
   }
+}
+
+function showCelebrate(group, all) {
+  if (group === 'daur') {
+    $('#celEmoji').textContent = '🎉🐔🎉';
+    $('#celTitle').textContent = 'Selamat! Daur hidup ayam lengkap!';
+    $('#celText').innerHTML = 'Telur → Embrio → Menetas → Anak Ayam → Ayam Dewasa → bertelur lagi.<br/>Daur hidup ayam terus berulang 🔁';
+    $('#celFlow').textContent = '🥚 → 🔬 → 🐣 → 🐥 → 🐔 → 🥚';
+  } else {
+    $('#celEmoji').textContent = '🎉🍲🎉';
+    $('#celTitle').textContent = 'Lima masakan Banjar terkumpul!';
+    $('#celText').innerHTML = 'Dari ayam kampung di pekarangan menjadi Soto Banjar, Masak Habang, Nasi Kuning, Lontong Orari, dan Ketupat Kandangan.';
+    $('#celFlow').textContent = '🍲 · 🌶️ · 🍛 · 🍙 · 🥥';
+  }
+  if (all) $('#celText').innerHTML += '<br/><b>Semua 10 QR sudah ditemukan! 🏆</b>';
 }
 
 function applyScanned(list, newStage) {
