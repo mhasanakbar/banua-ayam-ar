@@ -7,6 +7,8 @@ export const QUESTIONS = [
   { q: 'Apa gunanya "gigi telur" pada paruh anak ayam?', a: ['Untuk makan biji', 'Untuk memecah cangkang', 'Untuk minum'], c: 1 },
   { q: 'Apa yang paling dibutuhkan anak ayam di minggu pertama?', a: ['Kehangatan, air bersih, dan pakan', 'Dimandikan setiap hari', 'Dilepas bebas di halaman'], c: 0 },
   { q: 'Mengapa kandang ayam di Banjarmasin sebaiknya dibuat panggung?', a: ['Supaya terlihat mewah', 'Agar aman dari genangan/banjir dan tetap kering', 'Agar ayam bisa terbang'], c: 1 },
+  { q: 'Dalam bahasa Banjar, "habang" pada Ayam Masak Habang artinya…', a: ['Pedas', 'Merah', 'Manis'], c: 1 },
+  { q: 'Ketupat Kandangan disajikan dengan kuah…', a: ['Santan kental berempah', 'Kecap manis', 'Kaldu bening tanpa santan'], c: 0 },
 ];
 
 const KEY = 'banua-ayam-quiz';
@@ -78,7 +80,7 @@ export function openQuiz(kind, onClose) {
       <div class="score">${score}/${QUESTIONS.length}</div>
       ${kind === 'pre'
         ? '<p>Terima kasih! Sekarang jelajahi kelima tahap dengan Kamera AR, lalu kerjakan <b>Tes Akhir</b> untuk melihat peningkatanmu.</p>'
-        : `<div class="cmp"><div>Tes awal<b>${pre ?? '–'}/5</b></div><div>Tes akhir<b>${post}/5</b></div></div>
+        : `<div class="cmp"><div>Tes awal<b>${pre ?? '–'}/${R.pre?.total ?? QUESTIONS.length}</b></div><div>Tes akhir<b>${post}/${QUESTIONS.length}</b></div></div>
            <p>${pre != null ? (post > pre ? `🎉 Naik ${post - pre} poin setelah memakai Banua Ayam AR!` : post === pre ? 'Nilaimu sama — coba lihat lagi tips tiap tahap.' : 'Coba lihat lagi tips di tiap tahap 🙂') : 'Kerjakan tes awal di perangkat ini untuk melihat perbandingan.'}</p>
            <div class="meta" style="text-align:center">Seberapa membantu aplikasi ini?</div>
            <div class="stars">${[1, 2, 3, 4, 5].map((n) => `<span data-n="${n}">⭐</span>`).join('')}</div>`}
@@ -93,7 +95,7 @@ export function openQuiz(kind, onClose) {
   }
 
   if (kind === 'pre') {
-    el.innerHTML = `<div class="box"><h2>${title}</h2><p>5 soal pilihan ganda, ±1 menit. Tidak ada data pribadi yang dikumpulkan — hasil hanya tersimpan di HP ini.</p>
+    el.innerHTML = `<div class="box"><h2>${title}</h2><p>${QUESTIONS.length} soal pilihan ganda, ±1 menit. Tidak ada data pribadi yang dikumpulkan — hasil hanya tersimpan di HP ini.</p>
       <button class="main" data-go>Mulai</button><button class="main ghost" data-x>Nanti saja</button></div>`;
     el.querySelector('[data-go]').onclick = question;
     el.querySelector('[data-x]').onclick = close;

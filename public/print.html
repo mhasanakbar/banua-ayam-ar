@@ -34,7 +34,7 @@
   if (host) net.host = host;
   document.getElementById('h').textContent = `Kamera AR: ${net.arUrl(0)}`;
   document.getElementById('g').innerHTML = STAGES.map((s) => `
-    <div class="card"><div class="n">TAHAP ${s.n}</div>
+    <div class="card"><div class="n">${s.label.toUpperCase()}</div>
     <img src="${net.qrDataUrl(net.arUrl(s.n), 8, 3)}" alt="QR tahap ${s.n}" />
     <div>${s.emoji} ${s.name}</div><div class="u">${net.arUrl(s.n)}</div></div>`).join('');
 </script>

@@ -20,9 +20,9 @@
   .conn { margin-left: auto; font-size: 12px; display: flex; align-items: center; gap: 6px; background: #0005; padding: 5px 9px; border-radius: 20px; }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; }
   .dot.ok { background: #4ade80; box-shadow: 0 0 6px #4ade80; } .dot.bad { background: #ef4444; }
-  #dots { display: flex; gap: 5px; }
+  #dots { display: grid; grid-template-columns: repeat(5, 24px); gap: 4px; }
   @media (max-width: 440px) { #connText { display: none; } .badge { font-size: 11px; padding: 4px 8px; } #dots span { width: 24px; height: 24px; } header { gap: 6px; padding-left: 10px; padding-right: 10px; } }
-  #dots span { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font-size: 14px; background: #ffffff1c; border: 1px dashed #ffffff55; }
+  #dots span { width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center; font-size: 14px; background: #ffffff1c; border: 1px dashed #ffffff55; }
   #dots span.on { background: var(--gold); border: 1px solid #fff; }
   #dots span.cur { outline: 2px solid #fff; outline-offset: 2px; }
   #sheet { position: fixed; left: 0; right: 0; bottom: 0; background: linear-gradient(170deg, #4a2412f5, #2b1608f8); border-radius: 22px 22px 0 0; padding: 14px 18px calc(env(safe-area-inset-bottom) + 16px); max-height: 52vh; overflow-y: auto; transition: transform .35s; box-shadow: 0 -10px 30px #0006; }
@@ -62,25 +62,25 @@
   <div class="time" id="time"></div>
   <p id="desc"></p>
   <ul id="facts"></ul>
-  <div class="tips"><b>🧑‍🌾 Tips beternak</b><ul id="tips"></ul></div>
+  <div class="tips"><b id="tipsTitle">🧑‍🌾 Tips beternak</b><ul id="tips"></ul></div>
   <p style="font-size:13px"><a href="ar.html" style="color:#ffd36b">📷 Buka Kamera AR</a> · <a href="tentang.html" style="color:#ffd36b">ℹ️ Tentang</a></p>
   <div class="nav">
     <button id="prev">← Sebelumnya</button>
     <button id="next" class="primary">Berikutnya →</button>
   </div>
 </div>
-<div id="err"><div><h2>Tahap tidak ditemukan</h2><p>Scan salah satu dari 5 QR di Rumah Banjar.</p></div></div>
+<div id="err"><div><h2>Tahap tidak ditemukan</h2><p>Pindai salah satu dari 10 QR di Rumah Banjar.</p></div></div>
 
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { STAGES, buildStage } from './js/models.js';
+import { STAGES, GROUPS, TOTAL, buildStage, byNum } from './js/models.js';
 import { net } from './js/net.js';
 await net.init();
 
 const $ = (s) => document.querySelector(s);
-const n0 = Number(new URLSearchParams(location.search).get('s') || (location.pathname.match(/\/scan\/(\d)/) || [])[1]);
-if (!(n0 >= 1 && n0 <= 5)) { $('#err').style.display = 'grid'; throw new Error('bad stage'); }
+const n0 = Number(new URLSearchParams(location.search).get('s') || (location.pathname.match(/\/scan\/(\d+)/) || [])[1]);
+if (!(n0 >= 1 && n0 <= TOTAL)) { $('#err').style.display = 'grid'; throw new Error('bad stage'); }
 
 let scanned = [];
 let current = n0;
@@ -124,6 +124,7 @@ function burst(color) {
 let model = null, appear = 0, appearStart = 0;
 function show(n, animate = true) {
   current = n;
+  ctrl.target.y = n > 5 ? 0.15 : 0.5;
   const s = STAGES[n - 1];
   if (model) scene.remove(model);
   model = buildStage(n);
@@ -131,7 +132,8 @@ function show(n, animate = true) {
   scene.add(model);
   appear = animate ? 0 : 1; appearStart = performance.now();
   document.documentElement.style.setProperty('--c', s.color);
-  $('#badge').textContent = `TAHAP ${n}/5`;
+  $('#badge').textContent = s.label.toUpperCase();
+  $('#tipsTitle').textContent = s.tipsTitle;
   $('#name').textContent = `${s.emoji} ${s.name}`;
   $('#time').textContent = `⏱ ${s.time}`;
   $('#desc').textContent = s.desc;
@@ -146,14 +148,14 @@ function show(n, animate = true) {
 function renderDots() {
   $('#dots').innerHTML = STAGES.map((s) => `<span class="${scanned.includes(s.n) ? 'on' : ''} ${s.n === current ? 'cur' : ''}" data-n="${s.n}">${scanned.includes(s.n) ? s.emoji : s.n}</span>`).join('');
   $('#dots').querySelectorAll('span.on').forEach((el) => (el.onclick = () => show(Number(el.dataset.n))));
-  const sorted = [...scanned].sort();
+  const sorted = [...scanned].sort(byNum);
   const i = sorted.indexOf(current);
   $('#prev').disabled = i <= 0;
   $('#next').disabled = i < 0 || i >= sorted.length - 1;
   $('#next').textContent = i >= sorted.length - 1 && scanned.length < 5 ? `Cari QR lain (${scanned.length}/5)` : 'Berikutnya →';
 }
-$('#prev').onclick = () => { const s = [...scanned].sort(); const i = s.indexOf(current); if (i > 0) show(s[i - 1]); };
-$('#next').onclick = () => { const s = [...scanned].sort(); const i = s.indexOf(current); if (i < s.length - 1) show(s[i + 1]); };
+$('#prev').onclick = () => { const s = [...scanned].sort(byNum); const i = s.indexOf(current); if (i > 0) show(s[i - 1]); };
+$('#next').onclick = () => { const s = [...scanned].sort(byNum); const i = s.indexOf(current); if (i < s.length - 1) show(s[i + 1]); };
 $('#grip').onclick = () => $('#sheet').classList.toggle('collapsed');
 
 function resize() {
@@ -208,7 +210,7 @@ function vibrate(p) { try { navigator.vibrate && navigator.vibrate(p); } catch {
 function celebrate() {
   const d = document.createElement('div');
   d.className = 'done';
-  d.innerHTML = `<div class="card"><div class="big">🎉🐔🎉</div><h1>Daur hidup lengkap!</h1><p>🥚 → 🔬 → 🐣 → 🐥 → 🐔 → 🥚<br/>Kamu sudah menemukan semua tahap!</p><button class="primary">Lihat lagi</button></div>`;
+  d.innerHTML = `<div class="card"><div class="big">🎉🐔🎉</div><h1>Semua 10 QR ditemukan!</h1><p>🥚 → 🔬 → 🐣 → 🐥 → 🐔<br/>🍲 · 🌶️ · 🍛 · 🍙 · 🥥<br/>Dari daur hidup ayam sampai masakan Banjar!</p><button class="primary">Lihat lagi</button></div>`;
   d.querySelector('button').onclick = () => d.remove();
   document.body.appendChild(d);
   vibrate([80, 60, 80, 60, 200]);
@@ -220,8 +222,8 @@ async function report() {
     scanned = r.scanned;
     show(n0, true);
     vibrate(r.isNew ? [60, 40, 120] : 40);
-    popMsg(r.isNew ? `✨ Tahap ${n0} terbuka! Model juga tampil di rumah 3D 🏠` : `Tahap ${n0} sudah pernah discan 👍`);
-    if (r.isNew && scanned.length === 5) setTimeout(celebrate, 1400);
+    popMsg(r.isNew ? `✨ ${STAGES[n0 - 1].label} terbuka! Model juga tampil di rumah 3D 🏠` : `${STAGES[n0 - 1].label} sudah pernah dipindai 👍`);
+    if (r.isNew && scanned.length === TOTAL) setTimeout(celebrate, 1400);
   } catch (e) {
     show(n0, true);
     $('#dot').className = 'dot bad'; $('#connText').textContent = 'Offline';

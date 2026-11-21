@@ -19,8 +19,8 @@
 
   header { position: fixed; top: 0; left: 0; right: 0; padding: calc(env(safe-area-inset-top) + 10px) 12px 10px; display: flex; align-items: center; gap: 8px; background: linear-gradient(#000a, #0000); pointer-events: none; }
   header > * { pointer-events: auto; }
-  #chips { display: flex; gap: 5px; }
-  #chips span { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; font-size: 16px; background: #ffffff22; border: 1px dashed #ffffff77; font-weight: 700; font-size: 13px; }
+  #chips { display: grid; grid-template-columns: repeat(5, 25px); gap: 4px; }
+  #chips span { width: 25px; height: 25px; border-radius: 9px; display: grid; place-items: center; font-size: 16px; background: #ffffff22; border: 1px dashed #ffffff77; font-weight: 700; font-size: 13px; }
   #chips span.on { background: var(--gold); border: 1px solid #fff; font-size: 16px; }
   #chips span.cur { outline: 2px solid #fff; outline-offset: 2px; }
   .conn { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 12px; background: #0007; padding: 6px 10px; border-radius: 20px; }
@@ -87,13 +87,13 @@
 <div id="reticle" class="hidden"><i></i><i></i><i></i><i></i><b></b></div>
 
 <div id="card" class="hidden">
-  <div id="hintCard">📷 Arahkan kamera ke salah satu dari <b>5 kode QR</b> di Rumah Banjar (layar laptop atau kertas cetak). Model 3D akan muncul di atas QR!</div>
+  <div id="hintCard">📷 Arahkan kamera ke salah satu dari <b>10 kode QR</b>: 5 daur hidup ayam (ruang utama) dan 5 masakan Banjar (padu/dapur), di layar laptop atau kertas cetak. Model 3D akan muncul di atas QR!</div>
   <div id="stageInfo" class="hidden">
     <h2 id="sName"></h2>
     <div class="time" id="sTime"></div>
     <p id="sDesc" class="hidden"></p>
     <ul id="sFacts" class="hidden"></ul>
-    <div id="sTipsBox" class="tips hidden"><b>🧑‍🌾 Tips beternak</b><ul id="sTips"></ul></div>
+    <div id="sTipsBox" class="tips hidden"><b id="sTipsTitle">🧑‍🌾 Tips beternak</b><ul id="sTips"></ul></div>
   </div>
   <div class="tools">
     <button id="bInfo">ℹ️ Info</button>
@@ -117,7 +117,8 @@
       <li>Geser layar untuk memutar model, cubit untuk memperbesar.</li>
     </ol>
     <div class="row2">
-      <button class="big ghostbig" id="preBtn">📝 Tes awal (1 menit)</button>
+      <button class="big ghostbig" id="preBtn">📝 Tes awal</button>
+      <button class="big ghostbig" id="postBtn2">📝 Tes akhir</button>
       <a class="big ghostbig" style="text-decoration:none;display:block" href="tentang.html">ℹ️ Tentang</a>
     </div>
     <p style="font-size:12px;opacity:.8">Gambar kamera diproses langsung di HP dan tidak dikirim ke mana pun.</p>
@@ -149,9 +150,9 @@
 <!-- Selesai -->
 <div id="done" class="screen hidden">
   <div class="box">
-    <div class="emoji">🎉🐔🎉</div>
-    <h1>Daur hidup lengkap!</h1>
-    <p>🥚 → 🔬 → 🐣 → 🐥 → 🐔 → 🥚<br/>Kamu sudah memunculkan kelima tahap daur hidup ayam. Daur hidup terus berulang!</p>
+    <div class="emoji" id="doneEmoji">🎉🐔🎉</div>
+    <h1 id="doneTitle">Daur hidup lengkap!</h1>
+    <p id="doneText">🥚 → 🔬 → 🐣 → 🐥 → 🐔 → 🥚<br/>Kamu sudah memunculkan kelima tahap daur hidup ayam. Daur hidup terus berulang!</p>
     <button class="big" id="postBtn">📝 Kerjakan Tes Akhir</button>
     <button class="big ghostbig" id="doneClose">Lanjut menjelajah</button>
   </div>

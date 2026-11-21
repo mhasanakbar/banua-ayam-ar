@@ -136,3 +136,10 @@ body:not(.static-mode) .static-only { display: none !important; }
 
 .tipsBox { background: #2f5a1f88; border: 1px solid #7dd36a66; border-radius: 12px; padding: 10px 12px; margin-top: 4px; color: #e9ffd9; }
 .tipsBox ul { margin: 6px 0 0; padding-left: 18px; line-height: 1.55; font-size: 14px; }
+
+/* progres 2 kelompok (daur hidup + masakan) */
+#chips { flex-direction: column; gap: 6px; }
+.chipRow { display: flex; align-items: center; gap: 5px; }
+.chipRow .rowLbl { width: 62px; font-size: 11px; font-weight: 700; color: #f2e2c4; line-height: 1.1; }
+.chipRow .chip { width: 34px; height: 34px; font-size: 18px; }
+.factsTitle { display: block; color: var(--gold); font-size: 14px; margin-top: 4px; }

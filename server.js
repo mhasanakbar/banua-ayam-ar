@@ -17,7 +17,7 @@ const HTTPS_PORT = Number(process.env.HTTPS_PORT) || 3443;
 const CERT_DIR = path.join(__dirname, 'certs');
 const PUBLIC = path.join(__dirname, 'public');
 const THREE_DIR = path.join(__dirname, 'node_modules', 'three');
-const STAGES = 5;
+const STAGES = 10;
 
 // ---------- Deteksi IP LAN ----------
 function lanAddresses() {
@@ -122,7 +122,7 @@ async function handler(req, res) {
     if (p === '/api/state') return json(res, state(req));
 
     let m;
-    if ((m = p.match(/^\/api\/scan\/(\d)$/)) && req.method === 'POST') {
+    if ((m = p.match(/^\/api\/scan\/(\d{1,2})$/)) && req.method === 'POST') {
       const n = Number(m[1]);
       if (n < 1 || n > STAGES) return json(res, { error: 'tahap tidak valid' }, 400);
       const isNew = !scanned.includes(n);
@@ -141,7 +141,7 @@ async function handler(req, res) {
       return json(res, { ok: true });
     }
 
-    if ((m = p.match(/^\/api\/qr\/(\d|home)\.png$/))) {
+    if ((m = p.match(/^\/api\/qr\/(\d{1,2}|home)\.png$/))) {
       const host = safeHost(url.searchParams.get('host')) || primaryHost();
       // QR berisi alamat HTTPS halaman kamera AR (kamera HP butuh HTTPS)
       const target = m[1] === 'home' ? `https://${host}:${HTTPS_PORT}/ar.html` : `https://${host}:${HTTPS_PORT}/ar.html?s=${m[1]}`;
@@ -155,7 +155,7 @@ async function handler(req, res) {
 
     // Halaman
     if (p === '/' || p === '/index.html') return sendFile(res, path.join(PUBLIC, 'index.html'));
-    if ((m = p.match(/^\/scan\/(\d)\/?$/))) { res.writeHead(302, { Location: `/scan.html?s=${m[1]}` }); return res.end(); }
+    if ((m = p.match(/^\/scan\/(\d{1,2})\/?$/))) { res.writeHead(302, { Location: `/scan.html?s=${m[1]}` }); return res.end(); }
     if (p === '/print') return sendFile(res, path.join(PUBLIC, 'print.html'));
     if (p === '/ar' || p === '/ar/' || p === '/ar.html') {
       // Kamera hanya boleh di HTTPS: alihkan otomatis bila dibuka lewat HTTP dari HP

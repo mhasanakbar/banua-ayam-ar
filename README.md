@@ -12,11 +12,13 @@ Pindai kode QR dengan **Kamera AR** di HP. Model 3D tiap tahap **daur hidup ayam
 |---|---|
 | **Masalah** | Telur dan daging ayam keluarga di Banjarmasin umumnya dibeli di pasar, sehingga pengeluaran ikut terdampak saat harga naik. Banyak keluarga punya pekarangan tetapi belum tahu cara memulai beternak ayam kampung: masa tetas, perawatan anak ayam, dan kandang yang aman dari genangan/banjir. |
 | **Pengguna** | Keluarga/ibu rumah tangga dengan pekarangan, pelajar, kelompok warga & UMKM pemula. Dipakai di rumah, sekolah, atau penyuluhan kelurahan/dinas. |
-| **Pemicu** | 5 marker QR (di layar di dalam Rumah Banjar 3D, atau dicetak). |
-| **Konten** | 5 model 3D berbeda + label teks 3D, penjelasan ilmiah, dan tips beternak per tahap. |
-| **Ukuran keberhasilan** | Nilai tes akhir > tes awal (kuis 5 soal), 5/5 tahap berhasil dimunculkan, rating kebermanfaatan ≥ 4/5. |
+| **Pemicu** | 10 marker QR (di layar di dalam Rumah Banjar 3D, atau dicetak): 5 daur hidup + 5 masakan Banjar. |
+| **Konten** | 10 model 3D berbeda + label teks 3D: daur hidup ayam dengan tips beternak, dan masakan Banjar dengan bahan & cara memasak. |
+| **Ukuran keberhasilan** | Nilai tes akhir > tes awal (kuis 7 soal), 10/10 QR berhasil dimunculkan, rating kebermanfaatan ≥ 4/5. |
 
-## 5 objek AR
+## 10 objek AR
+
+### Daur hidup ayam (ruang utama)
 
 | Tahap | Objek 3D | Tips beternak (contoh) |
 |---|---|---|
@@ -25,6 +27,18 @@ Pindai kode QR dengan **Kamera AR** di HP. Model 3D tiap tahap **daur hidup ayam
 | 3 | 🐣 Telur Menetas | Hari ke-18 berhenti memutar telur |
 | 4 | 🐥 Anak Ayam | Pemanas 32–35 °C di minggu pertama |
 | 5 | 🐔 Ayam Dewasa di sarang | Kandang panggung seperti rumah Banjar, aman dari banjir |
+
+### Masakan Banjar dari ayam (padu/dapur di belakang rumah)
+
+| QR | Objek 3D | Isi kartu |
+|---|---|---|
+| 6 · Masakan 1 | 🍲 Soto Banjar | Bahan & cara memasak |
+| 7 · Masakan 2 | 🌶️ Ayam Masak Habang | "Habang" = merah |
+| 8 · Masakan 3 | 🍛 Nasi Kuning Banjar | Nasi santan-kunyit + lauk masak habang |
+| 9 · Masakan 4 | 🍙 Lontong Orari | Menu sahur khas Banjar |
+| 10 · Masakan 5 | 🥥 Ketupat Kandangan | Ketupat janur + kuah santan |
+
+Padu (dapur) dilengkapi tungku kayu dengan kuali & panci berasap, lemari bumbu, lesung & alu, meja masak (talenan, cobek), tempayan, gantungan ketupat, dan meja saji tempat kelima hidangan muncul.
 
 ## Halaman
 
@@ -63,7 +77,8 @@ npm start
 public/            situs statis (yang dipublikasikan)
   ar.html          Kamera AR          js/ar.js, js/ar-pose.js, js/qr-worker.js
   index.html       dunia 3D           js/game.js, js/world.js, js/audio.js
-  js/models.js     5 model 3D + konten & tips
+  js/models.js     model 3D daur hidup + konten & tips
+  js/dishes.js     5 masakan Banjar (model 3D, bahan, cara memasak) + ketupat
   js/net.js        mode server lokal (sinkron) / mode statis (localStorage) + pembuat QR
   js/quiz.js       tes awal / tes akhir      js/config.js  (tautan survei opsional)
   vendor/          three.js, OrbitControls, jsQR, qrcode-generator (+ lisensi)
